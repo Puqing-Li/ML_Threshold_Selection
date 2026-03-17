@@ -65,9 +65,12 @@ def run_fabric_boxplots(
         logger.info(f"   ↳ valid T samples: {len(t_samples)}, valid P' samples: {len(p_samples)}, elapsed {time.time()-t0:.1f}s")
 
     os.makedirs(outputs_dir, exist_ok=True)
-    t_path = os.path.join(outputs_dir, 'Fabric_T_boxplot.png')
-    p_path = os.path.join(outputs_dir, 'Fabric_Pprime_boxplot.png')
+    t_path_png = os.path.join(outputs_dir, 'Fabric_T_boxplot.png')
+    t_path_svg = os.path.join(outputs_dir, 'Fabric_T_boxplot.svg')
+    p_path_png = os.path.join(outputs_dir, 'Fabric_Pprime_boxplot.png')
+    p_path_svg = os.path.join(outputs_dir, 'Fabric_Pprime_boxplot.svg')
 
+    # Plot T Parameter
     plot_param_boxplot_by_volume_thresholds(
         bootstrap_T,
         param='T',
@@ -75,7 +78,29 @@ def run_fabric_boxplots(
         zero_artifact_threshold=v_strict,
         particle_counts=particle_counts,
         title='T Parameter Across Volume Thresholds',
-        save_path=t_path,
+        save_path=t_path_png,
+        show=False,
+    )
+    plot_param_boxplot_by_volume_thresholds(
+        bootstrap_T,
+        param='T',
+        inflection_threshold=v_loose,
+        zero_artifact_threshold=v_strict,
+        particle_counts=particle_counts,
+        title='T Parameter Across Volume Thresholds',
+        save_path=t_path_svg,
+        show=False,
+    )
+
+    # Plot P' Parameter
+    plot_param_boxplot_by_volume_thresholds(
+        bootstrap_P,
+        param="P'",
+        inflection_threshold=v_loose,
+        zero_artifact_threshold=v_strict,
+        particle_counts=particle_counts,
+        title="P' Parameter Across Volume Thresholds",
+        save_path=p_path_png,
         show=False,
     )
     plot_param_boxplot_by_volume_thresholds(
@@ -85,13 +110,13 @@ def run_fabric_boxplots(
         zero_artifact_threshold=v_strict,
         particle_counts=particle_counts,
         title="P' Parameter Across Volume Thresholds",
-        save_path=p_path,
+        save_path=p_path_svg,
         show=False,
     )
 
     logger.info("✅ Fabric boxplots generated")
-    logger.info(f"   - T boxplot: {t_path}")
-    logger.info(f"   - P' boxplot: {p_path}")
+    logger.info(f"   - T boxplot: {t_path_png}, {t_path_svg}")
+    logger.info(f"   - P' boxplot: {p_path_png}, {p_path_svg}")
     logger.info(f"⏱️ Total time: {time.time()-t_start_all:.1f}s")
 
-    return t_path, p_path
+    return t_path_png, p_path_png

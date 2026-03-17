@@ -263,9 +263,9 @@ def show_prediction_visualization(app):
     plt.rcParams.update({
         'font.family': 'Arial',
         'font.size': 12,
-        'axes.labelsize': 13,
-        'xtick.labelsize': 11,
-        'ytick.labelsize': 11,
+        'axes.labelsize': 11,
+        'xtick.labelsize': 9,
+        'ytick.labelsize': 9,
         'legend.fontsize': 10,
         'axes.linewidth': 1.5,
         'lines.linewidth': 2.0
@@ -274,11 +274,15 @@ def show_prediction_visualization(app):
     scatter = axes[0, 1].scatter(v_min_mm3, app.probabilities, c=app.probabilities, cmap='plasma_r', alpha=0.3, s=15, edgecolors='none')
     
     axes[0, 1].set_xscale('log')
-    axes[0, 1].set_xlabel(r'Minimum Volume ($V_{\mathrm{min}}$, mm³)', fontweight='bold')
-    axes[0, 1].set_ylabel('Artifact Probability', fontweight='bold', color='black')
+    # Set explicit font sizes for the top-right subplot
+    axes[0, 1].set_xlabel(r'Minimum Volume ($V_{\mathrm{min}}$, mm³)', fontweight='bold', fontsize=11)
+    axes[0, 1].set_ylabel('Artifact Probability', fontweight='bold', color='black', fontsize=11)
+    # Set explicit tick label sizes
+    axes[0, 1].tick_params(axis='both', labelsize=9)
     axes[0, 1].tick_params(axis='y', labelcolor='black')
+    
     axes[0, 1].set_ylim(-0.05, 1.05)
-    axes[0, 1].set_title('Prediction Probability vs Minimum Volume', fontweight='bold', fontsize=14)
+    axes[0, 1].set_title('Prediction Probability vs Minimum Volume', fontweight='bold', fontsize=12)
     
     ax01_twin = axes[0, 1].twinx()
     ax01_twin.set_ylabel('Artifact Probability', fontweight='bold', color='darkred')

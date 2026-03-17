@@ -225,7 +225,7 @@ def plot_param_boxplot_by_volume_thresholds(
     plt.tight_layout()
 
     if save_path:
-        fig.savefig(save_path, dpi=dpi, bbox_inches='tight', facecolor='white')
+        fig.savefig(save_path, dpi=dpi, bbox_inches='tight', facecolor='white', transparent=False)
     if show:
         plt.show()
 

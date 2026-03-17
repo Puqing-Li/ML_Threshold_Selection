@@ -1,0 +1,33 @@
+At threshold 2.025000e-03 mm³ for sample LE01:
+Threshold Type: Loose
+============================================================
+
+Mean Ellipsoid Matrix (meanEll):
+[
+  [ 5.22896042e-03, -4.36675851e-04, -1.23243371e-04 ],
+  [ -4.36675851e-04, 4.80863405e-03, 3.94744333e-04 ],
+  [ -1.23243371e-04, 3.94744333e-04, 4.05392377e-03 ]
+]
+
+V matrix (eigenvectors):
+[
+  [ 0.79695350  0.60195768  0.05012046 ]
+  [ -0.56567633  0.71466357  0.41141987 ]
+  [ -0.21183808  0.35623446  -0.91006684 ]
+]
+
+D matrix (Eigenvalues - diagonal matrix):
+[
+  [ 5.57167176e-03, 0.00000000e+00, 0.00000000e+00 ],
+  [ 0.00000000e+00, 4.63759014e-03, 0.00000000e+00 ],
+  [ 0.00000000e+00, 0.00000000e+00, 3.88225657e-03 ]
+]
+
+Number of particles (spinels): 1726
+T: -0.015838162495201535
+P': 1.4365887956203955
+
+============================================================
+Notes:
+- V matrix: Each COLUMN is an eigenvector (principal axis). Column 0=Eigen1, Column 1=Eigen2, Column 2=Eigen3
+- For Avizo Clipping Plane: Foliation plane uses Eigen1 (col 0) and Eigen2 (col 1); Kinematic plane uses Eigen1 (col 0) and Eigen3 (col 2)
