@@ -39,4 +39,4 @@ jobs:
     
     - name: Test main module import
       run: |
-        python -c "import main; print('✅ Main module imports successfully')"
+        python -c "import main; print('Main module imports successfully')"

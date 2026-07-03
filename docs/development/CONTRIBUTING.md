@@ -6,14 +6,14 @@ We welcome contributions to ML Threshold Selection! This document provides guide
 
 ### Reporting Issues
 
-- Use the [GitHub Issues](https://github.com/VincentDD1125/ML-Threshold-Selection/issues) page
+- Use the [GitHub Issues](https://github.com/Puqing-Li/ML_Threshold_Selection/issues) page
 - Provide a clear description of the problem
 - Include steps to reproduce the issue
 - Attach relevant data files (if possible) and error messages
 
 ### Suggesting Enhancements
 
-- Use the [GitHub Discussions](https://github.com/VincentDD1125/ML-Threshold-Selection/discussions) page
+- Use the [GitHub Discussions](https://github.com/Puqing-Li/ML_Threshold_Selection/discussions) page
 - Describe the enhancement clearly
 - Explain why it would be useful
 - Provide examples if applicable
@@ -89,11 +89,11 @@ python -m pytest tests/ --cov=src/ml_threshold_selection --cov-report=html
 
 ```bash
 # Clone your fork
-git clone https://github.com/yourusername/ML-Threshold-Selection.git
-cd ML-Threshold-Selection
+git clone https://github.com/<your-github-username>/ML_Threshold_Selection.git
+cd ML_Threshold_Selection
 
 # Add upstream remote
-git remote add upstream https://github.com/VincentDD1125/ML-Threshold-Selection.git
+git remote add upstream https://github.com/Puqing-Li/ML_Threshold_Selection.git
 
 # Create virtual environment
 python -m venv .venv
@@ -195,7 +195,7 @@ src/ml_threshold_selection/
 
 If you have questions about contributing, please:
 
-- Open a [GitHub Discussion](https://github.com/VincentDD1125/ML-Threshold-Selection/discussions)
+- Open a [GitHub Discussion](https://github.com/Puqing-Li/ML_Threshold_Selection/discussions)
 - Contact the maintainers
 - Check existing issues and discussions
 
@@ -205,4 +205,4 @@ By contributing to ML Threshold Selection, you agree that your contributions wil
 
 ---
 
-Thank you for contributing to ML Threshold Selection! 🎉
+Thank you for contributing to ML Threshold Selection.

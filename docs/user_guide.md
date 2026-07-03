@@ -16,8 +16,8 @@ Complete user manual for the ML Threshold Selection toolkit.
 ### 1. Installation
 
 ```bash
-git clone https://github.com/VincentDD1125/ML-Threshold-Selection.git
-cd ML-Threshold-Selection
+git clone https://github.com/Puqing-Li/ML_Threshold_Selection.git
+cd ML_Threshold_Selection
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
@@ -69,8 +69,8 @@ python main.py
 - Review training results
 
 ### Step 6: Load Test Data
-- Click **"6. Load Test Data"**
-- Select your test data file
+- Click **"6a. Load Single Test Data"** (or **"6b. Load Multi Test Data"** for several samples)
+- Select your test data file(s)
 - Verify loaded data
 
 ### Step 7: Predict Analysis
@@ -79,7 +79,7 @@ python main.py
 - Check dual threshold analysis plot
 
 ### Step 8: Export Results
-- Click **"📤 Export Results"**
+- Click **"8. Export / Reports"**
 - Select output directory
 - Choose export format
 
@@ -200,7 +200,7 @@ results = learner.analyze_sample(df)
 ## FAQ
 
 ### Q: What is the difference between loose and strict thresholds?
-**A**: Loose threshold is the inflection point for optimal balance. Strict threshold removes all particles with artifact probability > 0.01.
+**A**: The loose threshold is placed at the knee of the cumulative artifact-rate curve (Kneedle algorithm), balancing artifact removal against grain retention. The strict threshold is the smallest volume at which the retained population contains no object with a non-zero artifact probability.
 
 ### Q: How do I determine expert thresholds?
 **A**: Use TomoFab to generate stereographic projections and analyze fabric patterns to identify optimal volume thresholds.
@@ -209,7 +209,7 @@ results = learner.analyze_sample(df)
 **A**: Use supervised learning with labeled data instead.
 
 ### Q: How accurate are the predictions?
-**A**: Typically 85-95% accuracy on well-prepared datasets. Cross-validation scores are provided during training.
+**A**: Under leave-one-sample-out and five-fold cross-validation across the five training samples, the classifier attains an AUC of 0.96-0.99; per-sample machine-learning thresholds reproduce the expert reference thresholds to within 1-6%. Reproduce with `cross_validation.py`.
 
 ### Q: Can I use my own data format?
 **A**: The system expects specific column names. Modify your data to match the required format.
@@ -222,5 +222,5 @@ results = learner.analyze_sample(df)
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/VincentDD1125/ML-Threshold-Selection/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/VincentDD1125/ML-Threshold-Selection/discussions)
+- **Issues**: [GitHub Issues](https://github.com/Puqing-Li/ML_Threshold_Selection/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Puqing-Li/ML_Threshold_Selection/discussions)

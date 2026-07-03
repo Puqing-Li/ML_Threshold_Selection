@@ -9,7 +9,7 @@ version: 1.2.0
 date-released: 2026-07-02
 license: MIT
 repository-code: "https://github.com/Puqing-Li/ML_Threshold_Selection"
-doi: 10.5281/zenodo.19065901
+doi: 10.5281/zenodo.18979422
 keywords:
   - xrct
   - shape preferred orientation
