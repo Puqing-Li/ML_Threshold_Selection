@@ -99,13 +99,13 @@ See [`CITATION.cff`](CITATION.cff), or:
 
 ## References
 
-- Brandon MT (1995). Analysis of geologic strain data in strain-magnitude space. *Journal of Structural Geology* 17(10), 1375–1385. doi:10.1016/0191-8141(95)00035-4
-- Chatzaras V, Lusk ADJ, Chapman T, Aldanmaz E, Davis JR, Tikoff B (2021). Transpressional deformation in the lithospheric mantle beneath the North Anatolian Fault Zone. *Tectonophysics* 815, 229007. doi:10.1016/j.tecto.2021.229007 (Section 3.2 describes the 6D log-ellipsoid vectorization on which the feature space builds.)
-- Davis JR (2019). geologyGeometry: an R package for structural geology. http://www.joshuadavis.us/software/index.html
-- Efron B, Tibshirani RJ (1993). *An Introduction to the Bootstrap*. New York: Chapman & Hall/CRC.
-- Jelínek V (1981). Characterization of the magnetic fabric of rocks. *Tectonophysics* 79(3–4), T63–T67. doi:10.1016/0040-1951(81)90110-4
-- Ke G, Meng Q, Finley T, Wang T, Chen W, Ma W, Ye Q, Liu T-Y (2017). LightGBM: a highly efficient gradient boosting decision tree. *Advances in Neural Information Processing Systems* 30, 3146–3154.
-- Petri B, Almqvist BSG, Pistone M (2020). 3D rock fabric analysis using micro-tomography: an introduction to the open-source TomoFab MATLAB code. *Computers & Geosciences* 138, 104444. doi:10.1016/j.cageo.2020.104444
+- Brandon, M.T., 1995. Analysis of geologic strain data in strain-magnitude space. Journal of Structural Geology 17, 1375–1385. https://doi.org/10.1016/0191-8141(95)00035-4
+- Chatzaras, V., Lusk, A.D.J., Chapman, T., Aldanmaz, E., Davis, J.R., Tikoff, B., 2021. Transpressional deformation in the lithospheric mantle beneath the North Anatolian Fault Zone. Tectonophysics 815, 229007. https://doi.org/10.1016/j.tecto.2021.229007 (Section 3.2 describes the 6D log-ellipsoid vectorization on which the feature space builds.)
+- Davis, J.R., 2019. geologyGeometry: an R package for structural geology. http://www.joshuadavis.us/software/index.html
+- Efron, B., Tibshirani, R.J., 1993. An Introduction to the Bootstrap. Chapman & Hall/CRC, New York.
+- Jelínek, V., 1981. Characterization of the magnetic fabric of rocks. Tectonophysics 79, T63–T67. https://doi.org/10.1016/0040-1951(81)90110-4
+- Ke, G., Meng, Q., Finley, T., Wang, T., Chen, W., Ma, W., Ye, Q., Liu, T.-Y., 2017. LightGBM: a highly efficient gradient boosting decision tree. Advances in Neural Information Processing Systems 30, 3146–3154.
+- Petri, B., Almqvist, B.S.G., Pistone, M., 2020. 3D rock fabric analysis using micro-tomography: An introduction to the open-source TomoFab MATLAB code. Computers & Geosciences 138, 104444. https://doi.org/10.1016/j.cageo.2020.104444
 
 ## License
 

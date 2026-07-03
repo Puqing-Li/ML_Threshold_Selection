@@ -199,11 +199,11 @@ CI_95 = [percentile_2.5, percentile_97.5]
 
 ## References
 
-1. **Brandon, M.T. (1995)**. Analysis of geologic strain data in strain-magnitude space. *Journal of Structural Geology*, 17(10), 1375–1385. doi:10.1016/0191-8141(95)00035-4
-2. **Chatzaras, V., Lusk, A.D.J., Chapman, T., Aldanmaz, E., Davis, J.R., Tikoff, B. (2021)**. Transpressional deformation in the lithospheric mantle beneath the North Anatolian Fault Zone. *Tectonophysics*, 815, 229007. doi:10.1016/j.tecto.2021.229007 (Section 3.2: 6D log-ellipsoid vectorization.)
-3. **Davis, J.R. (2019)**. geologyGeometry: an R package for structural geology. http://www.joshuadavis.us/software/index.html
-4. **Efron, B., Tibshirani, R.J. (1993)**. *An Introduction to the Bootstrap*. New York: Chapman & Hall/CRC.
-5. **Jelínek, V. (1981)**. Characterization of the magnetic fabric of rocks. *Tectonophysics*, 79(3–4), T63–T67. doi:10.1016/0040-1951(81)90110-4
-6. **Ke, G., Meng, Q., Finley, T., Wang, T., Chen, W., Ma, W., Ye, Q., Liu, T.-Y. (2017)**. LightGBM: a highly efficient gradient boosting decision tree. *Advances in Neural Information Processing Systems*, 30, 3146–3154.
-7. **Petri, B., Almqvist, B.S.G., Pistone, M. (2020)**. 3D rock fabric analysis using micro-tomography: an introduction to the open-source TomoFab MATLAB code. *Computers & Geosciences*, 138, 104444. doi:10.1016/j.cageo.2020.104444. Code: https://github.com/benpetri/tomofab
-8. **Satopää, V., Albrecht, J., Irwin, D., Raghavan, B. (2011)**. Finding a "Kneedle" in a haystack: detecting knee points in system behavior. *31st International Conference on Distributed Computing Systems Workshops*, 166–171. doi:10.1109/ICDCSW.2011.20
+- Brandon, M.T., 1995. Analysis of geologic strain data in strain-magnitude space. Journal of Structural Geology 17, 1375–1385. https://doi.org/10.1016/0191-8141(95)00035-4
+- Chatzaras, V., Lusk, A.D.J., Chapman, T., Aldanmaz, E., Davis, J.R., Tikoff, B., 2021. Transpressional deformation in the lithospheric mantle beneath the North Anatolian Fault Zone. Tectonophysics 815, 229007. https://doi.org/10.1016/j.tecto.2021.229007 (Section 3.2: 6D log-ellipsoid vectorization.)
+- Davis, J.R., 2019. geologyGeometry: an R package for structural geology. http://www.joshuadavis.us/software/index.html
+- Efron, B., Tibshirani, R.J., 1993. An Introduction to the Bootstrap. Chapman & Hall/CRC, New York.
+- Jelínek, V., 1981. Characterization of the magnetic fabric of rocks. Tectonophysics 79, T63–T67. https://doi.org/10.1016/0040-1951(81)90110-4
+- Ke, G., Meng, Q., Finley, T., Wang, T., Chen, W., Ma, W., Ye, Q., Liu, T.-Y., 2017. LightGBM: a highly efficient gradient boosting decision tree. Advances in Neural Information Processing Systems 30, 3146–3154.
+- Petri, B., Almqvist, B.S.G., Pistone, M., 2020. 3D rock fabric analysis using micro-tomography: An introduction to the open-source TomoFab MATLAB code. Computers & Geosciences 138, 104444. https://doi.org/10.1016/j.cageo.2020.104444. Code: https://github.com/benpetri/tomofab
+- Satopää, V., Albrecht, J., Irwin, D., Raghavan, B., 2011. Finding a "Kneedle" in a haystack: Detecting knee points in system behavior. 31st International Conference on Distributed Computing Systems Workshops, 166–171. https://doi.org/10.1109/ICDCSW.2011.20
