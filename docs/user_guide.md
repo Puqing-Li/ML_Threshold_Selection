@@ -209,7 +209,7 @@ results = learner.analyze_sample(df)
 **A**: Use supervised learning with labeled data instead.
 
 ### Q: How accurate are the predictions?
-**A**: Under leave-one-sample-out and five-fold cross-validation across the five training samples, the classifier attains an AUC of 0.96-0.99; per-sample machine-learning thresholds reproduce the expert reference thresholds to within 1-6%. Reproduce with `cross_validation.py`.
+**A**: Under leave-one-sample-out and pooled five-fold cross-validation across the five training samples (35,745 segmented objects), the classifier attains held-out AUC values of 0.96-0.99; this can be reproduced directly with `cross_validation.py` on the datasets shipped in `trained model/`. Separately, when the classifier is trained per sample through the GUI, the machine-learning threshold reproduces the independently determined expert reference threshold to within 1-6% (S3 Fig of the companion article).
 
 ### Q: Can I use my own data format?
 **A**: The system expects specific column names. Modify your data to match the required format.
