@@ -16,6 +16,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated project URLs to correct GitHub repository
 - Improved documentation structure
 
+## [1.2.0] - 2026-07-02
+
+### Added
+- `cross_validation.py`: stand-alone leave-one-sample-out and five-fold
+  cross-validation of the artifact classifier, reproducing the validation
+  reported in the PLOS ONE article (S3 Fig)
+- `tools/BatchFile.py` and `tools/To_tomofab.py`: data-preparation scripts
+  converting raw Avizo Label-Analysis exports into the app input (Option A)
+  and the TomoFab input (Option B); English UI/logs
+- `examples/expert_thresholds.csv`: expert reference thresholds and voxel
+  sizes for the five training samples
+- `examples/README.md` and expanded `trained model/README.md`: data
+  provenance documentation (localities, voxel sizes, grain counts)
+- Double-click launchers for non-programmers: `run_app.bat`,
+  `tools/run_BatchFile.bat`, `tools/run_To_tomofab.bat`
+- `QUICKSTART.md`: plain-language guide requiring no coding experience
+- `CITATION.cff`: citation metadata (GitHub "Cite this repository")
+- README: companion-article links, "Where to find what" navigation table,
+  data-preparation pipeline, and reproducible-validation instructions
+
+### Changed
+- `pyproject.toml`: author/maintainer and repository URLs corrected to
+  Puqing-Li/ML_Threshold_Selection
+- README: clone URL and citation corrected to this repository
+
+### Removed
+- Stale timestamped development plots from `outputs/` (kept one
+  representative pair and the LE01 worked-example outputs)
+
 ## [0.1.0] - 2024-01-XX
 
 ### Added

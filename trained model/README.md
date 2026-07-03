@@ -1,21 +1,39 @@
-# Pre-trained Model and Samples Directory
+# Pre-trained Model and Training Datasets
 
-This folder contains the standardized machine learning artifacts and datasets provided with the PLOS ONE GUI Tool. It allows users to instantly perform strict/loose threshold mapping without needing to prepare extensive training data manually.
+This folder contains the pre-trained classifier and the five training datasets
+provided with the PLOS ONE GUI tool, so users can perform strict/loose
+threshold prediction instantly without preparing training data.
 
 ## Contents
 
-1. **last_time_model.pkl / Trainmodel.pkl**:
-   - The pre-trained LightGBM model utilizing our specialized resolution-aware feature engineering.
-   - It is loaded instantly via the "Load Last Time Model" button in the GUI.
-   
-2. **Standard 5 Training Samples (.xlsx)**:
-   - `totalAKAN20.xlsx`
-   - `totalANA16937.xlsx`
-   - `totalHL19335.xlsx`
-   - `totalLE03.xlsx`
-   - `totalLE19.xlsx`
-   - These 5 extensive micro-CT sample datasets contain the raw volumetric and shape parameters used to originally train the provided pipeline.
+1. **`last_time_model.pkl`**
+   - The pre-trained LightGBM classifier using the resolution-aware 7D
+     feature engineering (VoxelCount + six log-ellipsoid tensor components).
+   - Loaded via the **Load Last Model** button in the GUI.
 
-3. **voxel_sizes.xlsx**:
-   - This metadata table maps the exact scanning resolution (Voxel Size in mm) to each of the aforementioned training samples.
-   - Crucial for the `Resolution-Aware Feature Space Transformation` logic to normalize all features correctly into physical volumes.
+2. **Five training datasets (`total<Sample>.xlsx`)**
+   - `totalAKAN20.xlsx`, `totalANA16937.xlsx`, `totalHL19335.xlsx`,
+     `totalLE03.xlsx`, `totalLE19.xlsx`
+   - Per-grain morphometric tables (35,745 segmented objects in total) used to
+     train the shipped classifier. Produced from raw Avizo Label-Analysis
+     exports with `tools/BatchFile.py` (object-name row removed,
+     zero-eigenvalue and Anisotropy = 1 objects filtered).
+   - Sample provenance, voxel sizes, grain counts, and the independently
+     determined expert reference thresholds are documented in
+     [`examples/README.md`](../examples/README.md) and
+     [`examples/expert_thresholds.csv`](../examples/expert_thresholds.csv).
+
+3. **`voxel_sizes.xlsx`**
+   - Metadata table mapping each training sample to its scanning resolution
+     (voxel size in mm). Required by the resolution-aware feature
+     transformation to normalize features into physical volumes.
+
+## Reproducing the reported validation
+
+The leave-one-sample-out and five-fold cross-validation reported in the
+article (AUC ≈ 0.96–0.99; S3 Fig) can be reproduced directly from the files
+in this folder:
+
+```bash
+python cross_validation.py --data "trained model" --config examples/expert_thresholds.csv
+```

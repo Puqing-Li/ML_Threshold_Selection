@@ -1,6 +1,9 @@
 # Scientific Methods
 
 Core algorithms and methods used in the ML Threshold Selection toolkit.
+This document mirrors the Methods section of the companion PLOS ONE article;
+the implementation lives in `src/` and every reported number can be reproduced
+with `cross_validation.py`.
 
 ## Ellipsoid Feature Engineering
 
@@ -29,25 +32,96 @@ Where:
 - `E` is the diagonal matrix with `-2×log(√λᵢ)` on diagonal
 - The resulting 6D tensor components are: L₁₁, L₂₂, L₃₃, L₁₂, L₁₃, L₂₃
 
+This 6D vectorization follows the ellipsoidal-statistics framework of the
+geologyGeometry package (Davis and co-workers; see also Chatzaras et al. 2021,
+Section 3.2).
+
 ### 7D Feature Vector
 
 The following 7 features are extracted from each particle:
 
 1. **VoxelCount**: `VoxelCount = Volume(mm³) / voxel_size_mm³` (continuous)
 2. **L11**: Log-ellipsoid tensor component L₁₁
-3. **L22**: Log-ellipsoid tensor component L₂₂  
+3. **L22**: Log-ellipsoid tensor component L₂₂
 4. **L33**: Log-ellipsoid tensor component L₃₃
 5. **sqrt2_L12**: `√2 × L₁₂` (off-diagonal component)
 6. **sqrt2_L13**: `√2 × L₁₃` (off-diagonal component)
 7. **sqrt2_L23**: `√2 × L₂₃` (off-diagonal component)
 
-### Resolution-Aware Normalization
+VoxelCount makes the model resolution-aware (the voxel size of each sample is
+an explicit physical input), while the log-ellipsoid components encode shape
+anisotropy and 3D orientation. Features are standardized (zero mean, unit
+variance) before training.
 
-Features are normalized by voxel size to ensure cross-sample compatibility:
+## Classifier and Semi-Supervised Labelling
 
+### Model
+
+The classifier is a **LightGBM** gradient-boosted decision-tree model
+(`num_leaves = 31`, `learning_rate = 0.05`, 100 boosting rounds), with a
+RandomForest fallback (100 trees, max depth 10) when LightGBM is unavailable.
+Output probabilities are **calibrated** with `CalibratedClassifierCV`
+(isotonic calibration for hard labels; sigmoid calibration for soft labels).
+
+### Two training modes
+
+1. **Supervised**: individual grains are manually labelled as true grains or
+   artifacts.
+2. **Semi-supervised** (default): for each training sample an expert specifies,
+   from stereonet inspection in TomoFab, the reference volume threshold above
+   which the axis-parallel artifact clustering disappears (protocol Step 53).
+   Pseudo-labels are then assigned by this reference:
+
+   ```
+   label(grain) = artifact  if  Volume3d < expert Vmin
+                  true grain otherwise
+   ```
+
+   Two optional refinements are implemented: a sigmoid soft-label transition in
+   log-volume around the expert threshold, and an uncertainty band (±10% of the
+   threshold) in which labels grade between the two classes.
+
+### Validation
+
+Classification performance is assessed by **leave-one-sample-out** and
+**stratified five-fold** cross-validation across the five training samples
+(35,745 segmented objects; see `examples/README.md` for provenance). Across
+held-out samples the classifier attains an **AUC of 0.96–0.99**, and per-sample
+machine-learning thresholds reproduce the expert reference thresholds to within
+1–6% (S3 Fig of the article). Reproduce with:
+
+```bash
+python cross_validation.py --data "trained model" --config examples/expert_thresholds.csv
 ```
-normalized_feature = feature / (voxel_size_mm)³
-```
+
+## Threshold Determination
+
+From the calibrated per-grain artifact probabilities, the **cumulative
+artifact-rate curve** A(Vmin) is computed: the mean artifact probability of all
+objects retained at a given minimum-volume threshold.
+
+- **Loose threshold**: the *knee* of A(Vmin), identified automatically with the
+  **Kneedle algorithm** (maximum-curvature point of the normalized curve),
+  subject to two validity conditions: the retained population's mean artifact
+  probability is below a small tolerance (ε = 0.03 by default) and a minimum
+  number of grains is retained.
+- **Strict threshold**: the smallest volume at which the retained population
+  contains **no object with a non-zero artifact probability**.
+
+### Why a single scalar Vmin (not per-grain filtering)
+
+Although the classifier evaluates each object in the full 7D feature space, its
+decision is applied as a single global volume cut-off, for two reasons:
+
+1. **Compatibility**: standard 3D fabric software (TomoFab, Avizo) filters by a
+   minimum volume.
+2. **No selection bias**: probability-based per-grain removal would
+   preferentially discard small *true* grains whose shape resembles an
+   artifact, distorting the SPO of the retained population.
+
+Complementing the volume threshold, objects whose **shortest axis spans fewer
+than five voxels** are removed, because they cannot define a reliable ellipsoid
+regardless of total volume.
 
 ## Fabric Analysis (T and P' Parameters)
 
@@ -99,146 +173,35 @@ For detailed interpretation of these parameters, refer to the original literatur
 
 ### Statistical Resampling
 
-For each volume threshold, particles are resampled with replacement to estimate confidence intervals.
+For each volume threshold, grains are resampled with replacement to estimate
+confidence intervals: at each of the 1,000 iterations, n grains are drawn with
+replacement from the filtered population, where n is the number of retained
+grains for that sample (Efron & Tibshirani 1993).
 
 ### Algorithm
 
-1. **Bootstrap Sampling**: For each threshold, create B bootstrap samples (default B=1000)
-2. **Tensor Computation**: Compute mean tensor for each bootstrap sample
-3. **Parameter Calculation**: Calculate T and P' for each bootstrap sample
-4. **Confidence Intervals**: Compute 95% confidence intervals from bootstrap distribution
-
-### Confidence Interval Calculation
+1. **Bootstrap Sampling**: for each threshold, create B bootstrap samples (default B = 1000)
+2. **Tensor Computation**: compute the mean tensor for each bootstrap sample
+3. **Parameter Calculation**: calculate T and P' for each bootstrap sample
+4. **Confidence Intervals**: compute 95% confidence intervals from the bootstrap distribution
 
 ```
 CI_95 = [percentile_2.5, percentile_97.5]
 ```
 
-## Machine Learning Pipeline
-
-### Feature Standardization
-
-All features are standardized using StandardScaler:
-
-```
-X_scaled = (X - μ) / σ
-```
-
-Where μ is the mean and σ is the standard deviation.
-
-### Model Training
-
-The system supports multiple algorithms:
-
-- **LightGBM** (default): Gradient boosting with high performance
-- **Random Forest**: Ensemble method with good interpretability
-- **SVM**: Support vector machine for non-linear boundaries
-
-### Cross-Validation
-
-K-fold cross-validation is used for robust performance estimation:
-
-```
-CV_score = 1/k * Σᵢ score(fold_i)
-```
-
-### Hyperparameter Optimization
-
-Grid search or random search is used to optimize hyperparameters:
-
-```python
-param_grid = {
-    'n_estimators': [100, 200, 500],
-    'learning_rate': [0.01, 0.1, 0.2],
-    'max_depth': [3, 5, 7]
-}
-```
-
-## Probability Calculation
-
-### Artifact Probability
-
-The model outputs the probability that a particle is an artifact:
-
-```
-P(artifact) = sigmoid(Σᵢ wᵢ * fᵢ + b)
-```
-
-Where wᵢ are learned weights, fᵢ are features, and b is the bias term.
-
-### Threshold-Based Probability
-
-For semi-supervised learning, probabilities are derived from expert thresholds:
-
-```
-P(artifact) = 1 - exp(-α * (volume - threshold))
-```
-
-Where α is a scaling parameter.
-
-## Threshold Determination
-
-### Loose Threshold (Inflection Point)
-
-The loose threshold is identified as the inflection point of the artifact rate curve:
-
-```
-d²(artifact_rate)/d(volume)² = 0
-```
-
-This represents the optimal balance between artifact removal and particle retention.
-
-### Strict Threshold (Zero Artifacts)
-
-The strict threshold is determined as the volume where all particles have artifact probability > P_threshold:
-
-```
-strict_threshold = max(volume | P(artifact) > P_threshold)
-```
-
-Default P_threshold = 0.01 (configurable).
-
-### Grid Search
-
-A volume grid is generated for threshold evaluation:
-
-```python
-v_min = min(volumes) * 0.1
-v_max = max(volumes) * 10
-volume_grid = np.logspace(log10(v_min), log10(v_max), n_points)
-```
-
-### Optimization Criteria
-
-The optimal threshold minimizes the combined cost:
-
-```
-Cost = α * artifact_rate + β * particle_loss_rate
-```
-
-Where α and β are weighting factors.
-
 ## Implementation Details
 
-### Memory Optimization
-
-- Use `float32` for large datasets
-- Process samples in batches
-- Enable data type optimization
-
-### Performance Optimization
-
-- Parallel processing where available
-- Feature selection for high-dimensional data
-- Efficient tensor operations using NumPy
-
-### Numerical Stability
-
-- Add small epsilon values to prevent division by zero
-- Use log-sum-exp trick for numerical stability
-- Regularize eigenvalues to prevent singular matrices
+- Modular pipeline under `src/` (feature engineering, labelling, training,
+  threshold finding, fabric calculation, GUI controller)
+- Numerical stability: zero eigenvalues are replaced with a negligible
+  constant (1e-8) before logarithms (performed by `tools/BatchFile.py`)
+- Efficient tensor operations using vectorized NumPy
 
 ## References
 
-1. **Jelínek, V. (1981)**. Characterization of the magnetic fabric of rocks. *Tectonophysics*, 79(1-4), T63-T67.
-2. **TomoFab Software**: https://github.com/ctlab/TomoFab
+1. **Jelínek, V. (1981)**. Characterization of the magnetic fabric of rocks. *Tectonophysics*, 79(1-4), T63–T67.
+2. **Petri, B., Almqvist, B.S.G., Pistone, M. (2020)**. 3D rock fabric analysis using micro-tomography: an introduction to the open-source TomoFab MATLAB code. *Computers & Geosciences*, 138, 104444. Code: https://github.com/benpetri/tomofab
+3. **Chatzaras, V., et al. (2021)**. Section 3.2 for the 6D log-ellipsoid vectorization; **Davis, J.R.** and co-workers, geologyGeometry package: http://www.joshuadavis.us/software/index.html
+4. **Ke, G., et al. (2017)**. LightGBM: a highly efficient gradient boosting decision tree. *Advances in Neural Information Processing Systems*, 30.
+5. **Satopää, V., Albrecht, J., Irwin, D., Raghavan, B. (2011)**. Finding a "Kneedle" in a haystack: detecting knee points in system behavior. *ICDCS Workshops*.
+6. **Efron, B., Tibshirani, R.J. (1993)**. *An Introduction to the Bootstrap*. Chapman & Hall.

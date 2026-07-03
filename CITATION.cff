@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "ML Threshold Selection: Machine Learning-Driven Adaptive Threshold Selection for XRCT Particle Analysis"
+authors:
+  - family-names: "Li"
+    given-names: "Puqing"
+version: 1.2.0
+date-released: 2026-07-02
+license: MIT
+repository-code: "https://github.com/Puqing-Li/ML_Threshold_Selection"
+doi: 10.5281/zenodo.19065901
+keywords:
+  - xrct
+  - shape preferred orientation
+  - rock fabric
+  - particle analysis
+  - machine learning
+  - threshold selection
