@@ -200,7 +200,7 @@ results = learner.analyze_sample(df)
 ## FAQ
 
 ### Q: What is the difference between loose and strict thresholds?
-**A**: The loose threshold is placed at the knee of the cumulative artifact-rate curve (Kneedle algorithm), balancing artifact removal against grain retention. The strict threshold is the smallest volume at which the retained population contains no object with a non-zero artifact probability.
+**A**: The loose threshold is placed at the knee of the cumulative artifact-rate curve (Kneedle algorithm), balancing artifact removal against grain retention. The strict threshold is the smallest volume at which the retained population contains no object with an artifact probability above a small tolerance (0.01 by default; configurable via the Config Threshold dialog).
 
 ### Q: How do I determine expert thresholds?
 **A**: Use TomoFab to generate stereographic projections and analyze fabric patterns to identify optimal volume thresholds.

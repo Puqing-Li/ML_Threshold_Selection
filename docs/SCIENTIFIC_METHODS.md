@@ -106,7 +106,8 @@ objects retained at a given minimum-volume threshold.
   probability is below a small tolerance (ε = 0.03 by default) and a minimum
   number of grains is retained.
 - **Strict threshold**: the smallest volume at which the retained population
-  contains **no object with a non-zero artifact probability**.
+  contains no object with an artifact probability above a small tolerance
+  (0.01 by default; configurable via the Config Threshold dialog).
 
 ### Why a single scalar Vmin (not per-grain filtering)
 
