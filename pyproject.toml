@@ -62,23 +62,11 @@ Documentation = "https://github.com/Puqing-Li/ML_Threshold_Selection/tree/main/d
 Repository = "https://github.com/Puqing-Li/ML_Threshold_Selection.git"
 "Bug Tracker" = "https://github.com/Puqing-Li/ML_Threshold_Selection/issues"
 
-[project.scripts]
-ml-threshold-supervised = "ml_threshold_selection.scripts.run_supervised_demo:main"
-ml-threshold-semi-supervised = "ml_threshold_selection.scripts.run_semi_supervised_demo:main"
-
 [tool.setuptools]
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.setuptools.package-data]
-"ml_threshold_selection" = [
-    "examples/data/*.csv",
-    "examples/data/*.txt",
-    "gui/icons/*.png",
-    "gui/icons/*.ico",
-]
 
 [tool.black]
 line-length = 88
@@ -106,10 +94,6 @@ python_functions = ["test_*"]
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--cov=ml_threshold_selection",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-    "--cov-report=xml",
 ]
 
 [tool.coverage.run]
