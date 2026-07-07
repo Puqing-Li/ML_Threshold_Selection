@@ -1,2 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# macOS / shell launchers must keep LF line endings or they will not run
+*.command text eol=lf
+*.sh text eol=lf

@@ -31,10 +31,13 @@ intervals.
   The first run installs the required libraries automatically (needs internet);
   after that it starts in seconds. A window titled
   **"ML Threshold Selection System - Enhanced"** will open.
-- **macOS / Linux**: open Terminal, then copy-paste these two lines:
+- **macOS**: open the unzipped folder and **double-click `run_app.command`**.
+  (The first time, macOS may block it: right-click `run_app.command` →
+  **Open** → **Open**, once. After that a normal double-click works.)
+  The first run installs the required libraries automatically (needs internet).
+- **Linux / manual**: open a terminal in the unzipped folder and run:
   ```bash
-  cd <the unzipped folder>
-  pip install -r requirements.txt && python main.py
+  pip install -r requirements.txt && python3 main.py
   ```
 
 ## Step 4 — Analyse a sample (mouse only)
@@ -60,11 +63,11 @@ with our pre-trained model you only need four clicks:
 Your Avizo *Label-Analysis* export cannot be used directly — two double-click
 tools convert it:
 
-1. **`tools/run_BatchFile.bat`** — select your raw Avizo CSV export(s); it
-   produces `total<Sample>.xlsx` (the app's input). Enter a volume threshold
-   of 0 when asked, unless you already know one.
-2. **`tools/run_To_tomofab.bat`** — only needed for training samples that go
-   to TomoFab; produces `TT_<Sample>.xls`.
+1. **`tools/run_BatchFile`** (`.bat` on Windows, `.command` on macOS) — select
+   your raw Avizo CSV export(s); it produces `total<Sample>.xlsx` (the app's
+   input). Enter a volume threshold of 0 when asked, unless you already know one.
+2. **`tools/run_To_tomofab`** (`.bat` on Windows, `.command` on macOS) — only
+   needed for training samples that go to TomoFab; produces `TT_<Sample>.xls`.
 
 ## Troubleshooting
 
