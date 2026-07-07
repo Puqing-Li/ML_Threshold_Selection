@@ -14,6 +14,3 @@
 - After prediction, click “Mean Fabric” to compute loose/strict thresholds.
 - TXT outputs are saved under `outputs/`.
 
-## Files
-- This placeholder avoids missing-doc errors. You can replace with full guide.
-

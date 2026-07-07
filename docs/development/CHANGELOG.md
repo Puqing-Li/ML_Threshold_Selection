@@ -45,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Stale timestamped development plots from `outputs/` (kept one
   representative pair and the LE01 worked-example outputs)
 
-## [0.1.0] - 2024-01-XX
+## [0.1.0] - 2026-03
 
 ### Added
 - Initial release
@@ -56,7 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resolution-aware feature engineering
 - Dual threshold prediction (loose and strict)
 - Bootstrap confidence intervals
-- Comprehensive test suite
+- Unit tests for feature engineering
 - Example data and scripts
 - Documentation and user guides
 
@@ -71,13 +71,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Export Capabilities**: Excel reports, plots, and statistical summaries
 
 ### Technical Details
-- Python 3.7+ support
+- Python 3.8+ support
 - NumPy, Pandas, scikit-learn, Matplotlib, Seaborn
 - Modular architecture with clear separation of concerns
 - Comprehensive error handling and logging
 - Cross-platform compatibility (Windows, macOS, Linux)
 
-## [0.0.1] - 2024-01-XX
+## [0.0.1] - 2026-03
 
 ### Added
 - Initial project setup
