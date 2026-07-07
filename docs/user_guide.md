@@ -104,22 +104,13 @@ python main.py
 
 ## Command Line Usage
 
-### Supervised Learning
+Cross-validation of the classifier (reproduces the reported AUC) can be run from the repository root:
 
 ```bash
-python examples/scripts/run_supervised_demo.py \
-  --train_dir /path/to/training/data \
-  --test_file /path/to/test/file.xlsx \
-  --voxel_size_mm 0.03
+python cross_validation.py --data "trained model" --config examples/expert_thresholds.csv
 ```
 
-### Semi-supervised Learning
-
-```bash
-python examples/scripts/run_semi_supervised_demo.py \
-  --thresholds examples/data/expert_thresholds.csv \
-  --data_dir examples/data/train/
-```
+For end-to-end analysis, use the GUI application (`python main.py`) or the double-click launchers described in the README.
 
 ## Python API
 
@@ -200,7 +191,7 @@ results = learner.analyze_sample(df)
 ## FAQ
 
 ### Q: What is the difference between loose and strict thresholds?
-**A**: The loose threshold is placed at the knee of the cumulative artifact-rate curve (Kneedle algorithm), balancing artifact removal against grain retention. The strict threshold is the smallest volume at which the retained population contains no object with an artifact probability above a small tolerance (0.01 by default; configurable via the Config Threshold dialog).
+**A**: The loose threshold is placed at the inflection point of the cumulative artifact-rate curve (the volume that maximises the second derivative of the smoothed curve), balancing artifact removal against grain retention. The strict threshold is the smallest volume at which the retained population contains no object with an artifact probability above a small tolerance (0.01 by default; configurable via the Config Threshold dialog).
 
 ### Q: How do I determine expert thresholds?
 **A**: Use TomoFab to generate stereographic projections and analyze fabric patterns to identify optimal volume thresholds.

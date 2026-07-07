@@ -66,8 +66,8 @@ Input tables (XLSX or CSV) must contain the following columns, as exported by Av
 
 Raw Avizo Label-Analysis exports are not used directly: the first row holds the object name, most headers carry a trailing space, and the column order does not match TomoFab's schema. Two scripts in `tools/` automate the conversion (both open a file-picker dialog; Windows users can double-click the matching `run_*.bat`):
 
-1. `tools/BatchFile.py` — cleaning and app format. Removes the object-name row and degenerate objects (zero eigenvalues or Anisotropy = 1), and writes `total<Sample>.xlsx` (the app input; the files in `trained model/` were produced this way) and, with an optional volume threshold, `Quantity_<Sample>.xlsx`. Residual zeros in derived eigen tables are replaced with 1e-8 to prevent logarithmic singularities.
-2. `tools/To_tomofab.py` — TomoFab format. Converts the cleaned table to a tab-separated `TT_<Sample>.xls` with the TomoFab header schema. An example output is provided (`examples/TT_totalLE19.xls`).
+1. `tools/BatchFile.py` — cleaning and app format. Removes the object-name row and degenerate objects (zero eigenvalues or Anisotropy = 1), and per sample writes the full-column `total<Sample>.xlsx` (the app input; the files in `trained model/` were produced this way), a volume-filtered `Quantity_<Sample>.xlsx`, and the intermediate `<Sample>.xlsx`, `Eigens<Sample>.xlsx` and `VolumeEigen<Sample>.xlsx` tables. Residual zeros in the eigen columns are replaced with 1e-8 to prevent logarithmic singularities.
+2. `tools/To_tomofab.py` — TomoFab format. Reads a `total<Sample>.xlsx` table (which retains the `index`, `Volume3d`, `BaryCenter`, `EigenVal` and `EigenVec` columns) and writes a tab-separated `TT_total<Sample>.xls` with the TomoFab header schema (the `TT_` prefix is prepended to the whole input filename, e.g. `totalLE19.xlsx` becomes `TT_totalLE19.xls`). An example output is provided (`examples/TT_totalLE19.xls`).
 
 TomoFab is a separate, third-party open-source MATLAB code (Petri et al., 2020); it is not part of this repository — download it from https://github.com/benpetri/tomofab.
 
@@ -90,7 +90,7 @@ See [`CITATION.cff`](CITATION.cff), or:
   title   = {ML Threshold Selection: Machine Learning-Driven Adaptive Threshold Selection for XRCT Particle Analysis},
   author  = {Li, Puqing},
   year    = {2026},
-  version = {1.2},
+  version = {1.2.0},
   url     = {https://github.com/Puqing-Li/ML_Threshold_Selection},
   doi     = {10.5281/zenodo.18979422},
   license = {MIT}

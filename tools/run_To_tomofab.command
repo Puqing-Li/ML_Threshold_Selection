@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==========================================================
 #  Data preparation, step 2 (double-click, macOS)
-#  Cleaned spreadsheet  ->  TomoFab input (TT_<Sample>.xls)
+#  Cleaned spreadsheet  ->  TomoFab input (TT_total<Sample>.xls)
 #  Use this only for the training samples that go to TomoFab.
 #  A file-picker window will open to select your files.
 #  If blocked by Gatekeeper: right-click -> Open -> Open, once.

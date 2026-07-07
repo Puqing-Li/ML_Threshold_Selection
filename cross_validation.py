@@ -17,8 +17,8 @@ labelling, identical to the app's ExpertThresholdProcessor).
   * Panel B  Per held-out sample accuracy + AUC (LOSO) and pooled 5-fold AUC
 
 The per-sample ML-vs-expert minimum-volume threshold (S3 Fig panel C) is produced
-by the GUI app's own threshold module (src/ml_threshold_selection/threshold_finder.py)
-and is not recomputed here.
+by the GUI app's own threshold module (src/ml_threshold_selection/prediction_analysis.py,
+compute_dual_thresholds) and is not recomputed here.
 
 Usage (from the repository root):
     python cross_validation.py \

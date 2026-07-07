@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Resolution-aware feature engineering: Absolute Volume (mm^3), Voxel Size (um),
-Voxel Count (continuous, not rounded), plus 6 log-ellipsoid tensor features.
-Outputs 9 features with StandardScaler (fit/transform modes).
+Resolution-aware feature engineering: a continuous Voxel Count (absolute volume
+divided by the cube of the voxel edge length) plus the 6 log-ellipsoid tensor
+components. Outputs 7 features with StandardScaler (fit/transform modes).
+Absolute Volume and Voxel Size are intentionally excluded from the model input.
 """
 
 import numpy as np

@@ -30,7 +30,7 @@ intervals.
 - **Windows**: open the unzipped folder and **double-click `run_app.bat`**.
   The first run installs the required libraries automatically (needs internet);
   after that it starts in seconds. A window titled
-  **"ML Threshold Selection System - Enhanced"** will open.
+  **"ML Threshold Selection System"** will open.
 - **macOS**: open the unzipped folder and **double-click `run_app.command`**.
   (The first time, macOS may block it: right-click `run_app.command` →
   **Open** → **Open**, once. After that a normal double-click works.)
@@ -67,7 +67,7 @@ tools convert it:
    your raw Avizo CSV export(s); it produces `total<Sample>.xlsx` (the app's
    input). Enter a volume threshold of 0 when asked, unless you already know one.
 2. **`tools/run_To_tomofab`** (`.bat` on Windows, `.command` on macOS) — only
-   needed for training samples that go to TomoFab; produces `TT_<Sample>.xls`.
+   needed for training samples that go to TomoFab; produces `TT_total<Sample>.xls`.
 
 ## Troubleshooting
 

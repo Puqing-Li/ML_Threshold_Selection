@@ -33,7 +33,7 @@ Where:
 - The resulting 6D tensor components are: L₁₁, L₂₂, L₃₃, L₁₂, L₁₃, L₂₃
 
 This 6D vectorization follows the ellipsoidal-statistics framework of the
-geologyGeometry package (Davis and co-workers; see also Chatzaras et al. 2021,
+geologyGeometry package (Davis, 2019; see also Chatzaras et al. 2021,
 Section 3.2).
 
 ### 7D Feature Vector
@@ -100,11 +100,10 @@ From the calibrated per-grain artifact probabilities, the **cumulative
 artifact-rate curve** A(Vmin) is computed: the mean artifact probability of all
 objects retained at a given minimum-volume threshold.
 
-- **Loose threshold**: the *knee* of A(Vmin), identified automatically with the
-  **Kneedle algorithm** (maximum-curvature point of the normalized curve),
-  subject to two validity conditions: the retained population's mean artifact
-  probability is below a small tolerance (ε = 0.03 by default) and a minimum
-  number of grains is retained.
+- **Loose threshold**: the *inflection point* of A(Vmin), defined as the volume
+  that maximises the second derivative of the smoothed artifact-rate curve (the
+  curve is evaluated over 50 log-spaced volume levels and Gaussian-smoothed),
+  where the steep initial decline in artifact rate levels off.
 - **Strict threshold**: the smallest volume at which the retained population
   contains no object with an artifact probability above a small tolerance
   (0.01 by default; configurable via the Config Threshold dialog).
@@ -207,4 +206,3 @@ CI_95 = [percentile_2.5, percentile_97.5]
 - Jelínek, V., 1981. Characterization of the magnetic fabric of rocks. Tectonophysics 79, T63–T67. https://doi.org/10.1016/0040-1951(81)90110-4
 - Ke, G., Meng, Q., Finley, T., Wang, T., Chen, W., Ma, W., Ye, Q., Liu, T.-Y., 2017. LightGBM: a highly efficient gradient boosting decision tree. Advances in Neural Information Processing Systems 30, 3146–3154.
 - Petri, B., Almqvist, B.S.G., Pistone, M., 2020. 3D rock fabric analysis using micro-tomography: An introduction to the open-source TomoFab MATLAB code. Computers & Geosciences 138, 104444. https://doi.org/10.1016/j.cageo.2020.104444. Code: https://github.com/benpetri/tomofab
-- Satopää, V., Albrecht, J., Irwin, D., Raghavan, B., 2011. Finding a "Kneedle" in a haystack: Detecting knee points in system behavior. 31st International Conference on Distributed Computing Systems Workshops, 166–171. https://doi.org/10.1109/ICDCSW.2011.20
