@@ -117,8 +117,8 @@ For end-to-end analysis, use the GUI application (`python main.py`) or the doubl
 ### Supervised Learning
 
 ```python
-from src.ml_threshold_selection.supervised_learner import SupervisedThresholdLearner
-from src.ml_threshold_selection.feature_engineering import FeatureEngineer
+from ml_threshold_selection.supervised_learner import SupervisedThresholdLearner
+from ml_threshold_selection.feature_engineering import FeatureEngineer
 import pandas as pd
 
 # Load data
@@ -140,7 +140,7 @@ print(f"Optimal threshold: {results['threshold']:.2e} mm³")
 ### Semi-supervised Learning
 
 ```python
-from src.ml_threshold_selection.semi_supervised_learner import SemiSupervisedThresholdLearner
+from ml_threshold_selection.semi_supervised_learner import SemiSupervisedThresholdLearner
 
 # Initialize learner
 learner = SemiSupervisedThresholdLearner()

@@ -5,7 +5,7 @@ A machine learning-driven adaptive threshold selection system for X-ray computed
 tomography (XRCT) particle analysis.
 """
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __author__ = "Puqing Li"
 __email__ = "puqingli1125@gmail.com"
 

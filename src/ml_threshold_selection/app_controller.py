@@ -14,8 +14,8 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from src.ml_threshold_selection.ui_layout import build_main_ui
-from src.ml_threshold_selection.data_io import (
+from ml_threshold_selection.ui_layout import build_main_ui
+from ml_threshold_selection.data_io import (
     load_multiple_training_data as io_load_multiple_training_data,
     input_expert_thresholds as io_input_expert_thresholds,
     load_test_data as io_load_test_data,
@@ -25,20 +25,20 @@ from src.ml_threshold_selection.data_io import (
     load_file as io_load_file,
     derive_test_sample_id,
 )
-from src.ml_threshold_selection.ui_visualization import (
+from ml_threshold_selection.ui_visualization import (
     show_training_visualization as ui_show_training,
     show_prediction_visualization as ui_show_prediction,
     save_chart as ui_save_chart,
 )
-from src.ml_threshold_selection.labeling import generate_labels_from_thresholds as gen_labels_from_thresholds
-from src.ml_threshold_selection.training_pipeline import train_model_pipeline
-from src.ml_threshold_selection.io_persistence import auto_save as persist_auto_save, load_last as persist_load_last
-from src.ml_threshold_selection.prediction_analysis import compute_dual_thresholds
-from src.ml_threshold_selection.export_results import export_filtered_results, export_threshold_report
-from src.ml_threshold_selection.feature_utils import extract_simple_features as util_extract_simple_features
-from src.ml_threshold_selection.fabric_logging import UILogger
-from src.ml_threshold_selection.fabric_pipeline import run_fabric_boxplots
-from src.ml_threshold_selection.mean_fabric_calculator import (
+from ml_threshold_selection.labeling import generate_labels_from_thresholds as gen_labels_from_thresholds
+from ml_threshold_selection.training_pipeline import train_model_pipeline
+from ml_threshold_selection.io_persistence import auto_save as persist_auto_save, load_last as persist_load_last
+from ml_threshold_selection.prediction_analysis import compute_dual_thresholds
+from ml_threshold_selection.export_results import export_filtered_results, export_threshold_report
+from ml_threshold_selection.feature_utils import extract_simple_features as util_extract_simple_features
+from ml_threshold_selection.fabric_logging import UILogger
+from ml_threshold_selection.fabric_pipeline import run_fabric_boxplots
+from ml_threshold_selection.mean_fabric_calculator import (
     compute_mean_fabric_single,
     export_mean_fabric_txt,
     format_mean_fabric_for_display
@@ -59,9 +59,9 @@ try:
 except Exception:
     LIGHTGBM_AVAILABLE = False
 
-from src.analysis.ellipsoid_feature_analyzer import JoshuaFeatureAnalyzer as EllipsoidFeatureAnalyzer
-from src.features.ellipsoid_feature_engineering import JoshuaFeatureEngineerFixed as EllipsoidFeatureEngineer
-from src.features.res_aware_feature_engineering import ResolutionAwareFeatureEngineer
+from analysis.ellipsoid_feature_analyzer import JoshuaFeatureAnalyzer as EllipsoidFeatureAnalyzer
+from features.ellipsoid_feature_engineering import JoshuaFeatureEngineerFixed as EllipsoidFeatureEngineer
+from features.res_aware_feature_engineering import ResolutionAwareFeatureEngineer
 
 
 class FixedMLGUI:
@@ -790,6 +790,7 @@ class FixedMLGUI:
                 strict_threshold_mm=strict_threshold_mm,
                 loose_kept=loose_kept,
                 strict_kept=strict_kept,
+                strict_probability_threshold=self.strict_probability_threshold,
             )
             self.log(f"✅ Loose threshold results exported to: {loose_file}")
             self.log(f"✅ Strict threshold results exported to: {strict_file}")
@@ -802,11 +803,11 @@ class FixedMLGUI:
 
     # Analysis
     def analyze_ellipsoid_features(self):
-        from src.ml_threshold_selection.analysis_pipeline import run_feature_analysis
+        from ml_threshold_selection.analysis_pipeline import run_feature_analysis
         run_feature_analysis(self)
 
     def display_ellipsoid_analysis_results(self):
-        from src.ml_threshold_selection.analysis_pipeline import display_feature_analysis_results
+        from ml_threshold_selection.analysis_pipeline import display_feature_analysis_results
         display_feature_analysis_results(self)
 
     def extract_simple_features(self, df):
@@ -988,5 +989,4 @@ class FixedMLGUI:
             self.log(f"❌ Load last time model failed: {e}")
             import traceback
             self.log(f"Detailed error: {traceback.format_exc()}")
-
 

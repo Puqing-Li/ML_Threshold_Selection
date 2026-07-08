@@ -13,7 +13,7 @@ from scipy import stats
 import warnings
 warnings.filterwarnings('ignore')
 
-from src.features.ellipsoid_feature_engineering_legacy import JoshuaFeatureEngineer
+from features.ellipsoid_feature_engineering_legacy import JoshuaFeatureEngineer
 
 
 class JoshuaFeatureAnalyzer:

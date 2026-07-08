@@ -59,6 +59,7 @@ def export_threshold_report(
     strict_threshold_mm: float,
     loose_kept: int,
     strict_kept: int,
+    strict_probability_threshold: float = 0.01,
 ):
     with open(out_path, 'w', encoding='utf-8') as f:
         f.write("ML Threshold Selection - Dual Threshold Analysis Report\n")
@@ -73,7 +74,7 @@ def export_threshold_report(
         f.write(f"  - Voxel Count: {loose_threshold_vox:.0f} vox\n")
         f.write(f"  - Volume: {loose_threshold_mm:.2e} mm³\n")
         f.write(f"  - Particles Kept: {loose_kept}\n\n")
-        f.write("Strict Threshold (P>0.05):\n")
+        f.write(f"Strict Threshold (P>{strict_probability_threshold}):\n")
         f.write(f"  - Voxel Count: {strict_threshold_vox:.0f} vox\n")
         f.write(f"  - Volume: {strict_threshold_mm:.2e} mm³\n")
         f.write(f"  - Particles Kept: {strict_kept}\n\n")

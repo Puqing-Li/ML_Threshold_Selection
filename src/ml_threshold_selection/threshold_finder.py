@@ -28,13 +28,13 @@ class AdaptiveThresholdFinder:
         self.n_min = n_min
         
     def find_threshold(self, volumes: np.ndarray, probabilities: np.ndarray, 
-                      method: str = 'kneedle') -> Tuple[float, float]:
+                      method: str = 'inflection') -> Tuple[float, float]:
         """Find optimal threshold using A(V) curve analysis
         
         Args:
             volumes: Array of particle volumes
             probabilities: Array of artifact probabilities
-            method: Method for threshold selection ('kneedle' or 'first_valid')
+            method: Method for threshold selection ('inflection' or 'first_valid')
             
         Returns:
             Tuple of (optimal_threshold, uncertainty)
@@ -75,9 +75,8 @@ class AdaptiveThresholdFinder:
         
         valid_indices = np.where(valid_mask)[0]
         
-        if method == 'kneedle':
-            # Use Kneedle algorithm to find knee point
-            v_min_star = self._find_kneedle_point(volume_thresholds, artifact_rates, valid_indices)
+        if method == 'inflection':
+            v_min_star = self._find_inflection_point(volume_thresholds, artifact_rates, valid_indices)
         else:
             # Select first valid threshold
             v_min_star = volume_thresholds[valid_indices[0]]
@@ -87,9 +86,9 @@ class AdaptiveThresholdFinder:
         
         return v_min_star, uncertainty
     
-    def _find_kneedle_point(self, volumes: np.ndarray, rates: np.ndarray, 
+    def _find_inflection_point(self, volumes: np.ndarray, rates: np.ndarray,
                            valid_indices: np.ndarray) -> float:
-        """Find knee point using Kneedle algorithm
+        """Find the maximum-curvature point of the valid A(V) curve
         
         Args:
             volumes: Volume thresholds
@@ -111,10 +110,10 @@ class AdaptiveThresholdFinder:
         dy = np.gradient(valid_rates, log_volumes)
         d2y = np.gradient(dy, log_volumes)
         
-        # Find maximum second derivative point (steepest knee)
-        knee_idx = np.argmax(d2y)
+        # Find maximum second derivative point.
+        inflection_idx = np.argmax(d2y)
         
-        return valid_volumes[knee_idx]
+        return valid_volumes[inflection_idx]
     
     def _estimate_uncertainty(self, volumes: np.ndarray, probabilities: np.ndarray, 
                              threshold: float) -> float:

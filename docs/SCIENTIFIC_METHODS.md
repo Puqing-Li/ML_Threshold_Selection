@@ -60,8 +60,8 @@ variance) before training.
 The classifier is a **LightGBM** gradient-boosted decision-tree model
 (`num_leaves = 31`, `learning_rate = 0.05`, 100 boosting rounds), with a
 RandomForest fallback (100 trees, max depth 10) when LightGBM is unavailable.
-Output probabilities are **calibrated** with `CalibratedClassifierCV`
-(isotonic calibration for hard labels; sigmoid calibration for soft labels).
+The released GUI uses the model's per-grain artifact-probability estimates
+directly for threshold selection.
 
 ### Two training modes
 
@@ -96,7 +96,7 @@ python cross_validation.py --data "trained model" --config examples/expert_thres
 
 ## Threshold Determination
 
-From the calibrated per-grain artifact probabilities, the **cumulative
+From the per-grain artifact probabilities, the **cumulative
 artifact-rate curve** A(Vmin) is computed: the mean artifact probability of all
 objects retained at a given minimum-volume threshold.
 
@@ -111,7 +111,7 @@ objects retained at a given minimum-volume threshold.
 ### Why a single scalar Vmin (not per-grain filtering)
 
 Although the classifier evaluates each object in the full 7D feature space, its
-decision is applied as a single global volume cut-off, for two reasons:
+decision is applied as a single per-sample volume threshold, for two reasons:
 
 1. **Compatibility**: standard 3D fabric software (TomoFab, Avizo) filters by a
    minimum volume.
@@ -119,9 +119,9 @@ decision is applied as a single global volume cut-off, for two reasons:
    preferentially discard small *true* grains whose shape resembles an
    artifact, distorting the SPO of the retained population.
 
-Complementing the volume threshold, objects whose **shortest axis spans fewer
-than five voxels** are removed, because they cannot define a reliable ellipsoid
-regardless of total volume.
+The released workflow removes ill-resolved objects through this objective
+per-sample volume threshold; it does not apply an additional fixed
+axis-length filter.
 
 ## Fabric Analysis (T and P' Parameters)
 

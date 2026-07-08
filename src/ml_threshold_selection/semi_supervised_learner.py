@@ -9,8 +9,6 @@ import pandas as pd
 from typing import Optional, Tuple, Dict, Any, List
 import joblib
 import warnings
-from sklearn.model_selection import StratifiedKFold, LeaveOneGroupOut
-from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import RandomForestClassifier
 try:
     import lightgbm as lgb
@@ -203,7 +201,6 @@ class SemiSupervisedThresholdLearner:
         """
         self.random_state = random_state
         self.model = None
-        self.calibrator = None
         self.feature_columns = None
         self.feature_engineer = FeatureEngineer()
         self.threshold_finder = AdaptiveThresholdFinder()
@@ -335,25 +332,6 @@ class SemiSupervisedThresholdLearner:
         # Train model
         self.model.fit(X, y)
         
-        # Calibration
-        if has_soft_labels:
-            # For regression, use sigmoid calibration
-            self.calibrator = CalibratedClassifierCV(
-                self.model, 
-                method='sigmoid',
-                cv=3
-            )
-            # Convert to hard labels for calibration
-            y_hard = (y > 0.5).astype(int)
-            self.calibrator.fit(X, y_hard)
-        else:
-            # For classification, use isotonic calibration
-            self.calibrator = CalibratedClassifierCV(
-                self.model, 
-                method='isotonic',
-                cv=3
-            )
-            self.calibrator.fit(X, y)
     
     def _train_random_forest(self, X: pd.DataFrame, y: np.ndarray):
         """Train Random Forest model
@@ -373,7 +351,6 @@ class SemiSupervisedThresholdLearner:
         )
         
         self.model.fit(X, y_hard)
-        self.calibrator = None  # Random Forest doesn't need calibration
     
     def predict_proba(self, X: pd.DataFrame) -> np.ndarray:
         """Predict artifact probabilities
@@ -430,7 +407,6 @@ class SemiSupervisedThresholdLearner:
         """
         model_data = {
             'model': self.model,
-            'calibrator': self.calibrator,
             'feature_columns': self.feature_columns,
             'feature_engineer': self.feature_engineer,
             'threshold_finder': self.threshold_finder,
@@ -446,7 +422,6 @@ class SemiSupervisedThresholdLearner:
         """
         model_data = joblib.load(filepath)
         self.model = model_data['model']
-        self.calibrator = model_data['calibrator']
         self.feature_columns = model_data['feature_columns']
         self.feature_engineer = model_data.get('feature_engineer', FeatureEngineer())
         self.threshold_finder = model_data.get('threshold_finder', AdaptiveThresholdFinder())

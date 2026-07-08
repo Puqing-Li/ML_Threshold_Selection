@@ -9,8 +9,6 @@ import pandas as pd
 from typing import Optional, Tuple, Dict, Any
 import joblib
 import warnings
-from sklearn.model_selection import StratifiedKFold, LeaveOneGroupOut
-from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import roc_auc_score, precision_recall_curve
 try:
     import lightgbm as lgb
@@ -36,7 +34,6 @@ class SupervisedThresholdLearner:
         """
         self.random_state = random_state
         self.model = None
-        self.calibrator = None
         self.feature_columns = None
         self.feature_engineer = FeatureEngineer()
         self.threshold_finder = AdaptiveThresholdFinder()
@@ -70,12 +67,6 @@ class SupervisedThresholdLearner:
             'class_weight': 'balanced'
         }
         
-        # Set up cross-validation
-        if sample_ids is not None:
-            cv = LeaveOneGroupOut()
-        else:
-            cv = StratifiedKFold(n_splits=cv_folds, shuffle=True, random_state=self.random_state)
-        
         # Train model
         if LIGHTGBM_AVAILABLE:
             self.model = lgb.LGBMClassifier(**lgb_params)
@@ -89,18 +80,11 @@ class SupervisedThresholdLearner:
                 class_weight='balanced'
             )
         
-        # Probability calibration
-        self.calibrator = CalibratedClassifierCV(
-            self.model, 
-            method='isotonic',
-            cv=cv
-        )
-        
         if sample_ids is not None:
             # Custom CV for grouped data
             self._train_with_groups(X, y, sample_ids)
         else:
-            self.calibrator.fit(X, y)
+            self.model.fit(X, y)
         
         self.feature_columns = X.columns.tolist()
         
@@ -126,15 +110,6 @@ class SupervisedThresholdLearner:
         """
         # Simplified implementation - direct training
         self.model.fit(X, y)
-        
-        # Use sigmoid calibration
-        from sklearn.calibration import CalibratedClassifierCV
-        self.calibrator = CalibratedClassifierCV(
-            self.model, 
-            method='sigmoid',
-            cv=3
-        )
-        self.calibrator.fit(X, y)
     
     def predict_proba(self, X: pd.DataFrame) -> np.ndarray:
         """Predict artifact probabilities
@@ -145,12 +120,14 @@ class SupervisedThresholdLearner:
         Returns:
             Array of artifact probabilities
         """
-        if self.calibrator is None:
+        if self.model is None:
             raise ValueError("Model not trained yet")
         
         # Ensure feature order consistency
         X_ordered = X[self.feature_columns]
-        return self.calibrator.predict_proba(X_ordered)[:, 1]
+        if hasattr(self.model, 'predict_proba'):
+            return self.model.predict_proba(X_ordered)[:, 1]
+        return np.clip(self.model.predict(X_ordered), 0, 1)
     
     def find_threshold(self, volumes: np.ndarray, probabilities: np.ndarray) -> Tuple[float, float]:
         """Find optimal threshold for given volumes and probabilities
@@ -186,7 +163,6 @@ class SupervisedThresholdLearner:
         """
         model_data = {
             'model': self.model,
-            'calibrator': self.calibrator,
             'feature_columns': self.feature_columns,
             'feature_engineer': self.feature_engineer,
             'threshold_finder': self.threshold_finder
@@ -201,7 +177,6 @@ class SupervisedThresholdLearner:
         """
         model_data = joblib.load(filepath)
         self.model = model_data['model']
-        self.calibrator = model_data['calibrator']
         self.feature_columns = model_data['feature_columns']
         self.feature_engineer = model_data.get('feature_engineer', FeatureEngineer())
         self.threshold_finder = model_data.get('threshold_finder', AdaptiveThresholdFinder())
