@@ -8,7 +8,7 @@ Machine-learning-based selection of the minimum grain-volume threshold (Vmin) fo
 Segmented objects that span only a few voxels have poorly constrained best-fit ellipsoids whose axes align with the scanner coordinate system, producing artificial orientation clustering that masks the true rock fabric. This toolkit classifies such artifacts with a gradient-boosted model (LightGBM) built on seven resolution-aware features — a continuous voxel count plus the six components of the log-ellipsoid tensor — derives objective "loose" and "strict" volume thresholds from the cumulative artifact-rate curve, and computes the mean fabric tensor with bootstrap confidence intervals from the filtered grain population.
 
 - **Companion article**: Li P, Chatzaras V, Foley M, Özaydın S, Rey PF. *A standardized XRCT protocol for quantitative 3D shape preferred orientation analysis in rocks.* PLOS ONE (in revision).
-- **Step-by-step protocol**: [protocols.io](https://dx.doi.org/10.17504/protocols.io.n92ld16znl5b/v2)
+- **Step-by-step protocol**: [protocols.io](https://dx.doi.org/10.17504/protocols.io.n92ld16znl5b)
 - **Archived releases**: [doi.org/10.5281/zenodo.18979422](https://doi.org/10.5281/zenodo.18979422)
 
 New to Python? See [QUICKSTART.md](QUICKSTART.md); on Windows, simply double-click `run_app.bat`.

@@ -2,7 +2,7 @@
 
 This guide gets you from zero to a working analysis using only your mouse.
 (Everything here is also covered, with screenshots, in the step-by-step
-protocol: https://dx.doi.org/10.17504/protocols.io.n92ld16znl5b/v2)
+protocol: https://dx.doi.org/10.17504/protocols.io.n92ld16znl5b)
 
 ## What this tool does (in one paragraph)
 
