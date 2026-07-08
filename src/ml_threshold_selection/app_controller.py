@@ -208,7 +208,11 @@ class FixedMLGUI:
             self.log(f"   - Precision: {self.training_results['precision']:.3f}")
             self.log(f"   - Recall: {self.training_results['recall']:.3f}")
             self.log(f"   - F1 score: {self.training_results['f1']:.3f}")
-            # Auto-save
+            # Auto-save. Anchor to the repo root so training and "Load Last
+            # Model" target the same folder regardless of the working directory
+            # the app was launched from (IDE, Finder, python /path/main.py, ...).
+            from pathlib import Path as _Path
+            _models_dir = str(_Path(__file__).resolve().parents[2] / 'trained model')
             persist_auto_save(
                 model=self.model,
                 training_data=self.training_data,
@@ -219,7 +223,7 @@ class FixedMLGUI:
                 training_results=self.training_results,
                 ellipsoid_analysis_results=self.ellipsoid_analysis_results,
                 resolution_aware_engineer=self.resolution_aware_engineer,
-                outputs_dir='trained model'
+                outputs_dir=_models_dir
             )
             self.log("💾 Model automatically saved to 'trained model' folder for next session")
         except Exception as e:
@@ -944,7 +948,9 @@ class FixedMLGUI:
     # Persistence
     def load_last_time_model(self):
         try:
-            model_data = persist_load_last('trained model')
+            from pathlib import Path as _Path
+            _models_dir = str(_Path(__file__).resolve().parents[2] / 'trained model')
+            model_data = persist_load_last(_models_dir)
             self.model = model_data['model']
             self.training_data = model_data['training_data']
             self.expert_thresholds = model_data['expert_thresholds']

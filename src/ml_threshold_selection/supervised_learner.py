@@ -7,7 +7,6 @@ Supervised learning system for threshold selection
 import numpy as np
 import pandas as pd
 from typing import Optional, Tuple, Dict, Any
-import joblib
 import warnings
 from sklearn.metrics import roc_auc_score, precision_recall_curve
 try:
@@ -154,32 +153,6 @@ class SupervisedThresholdLearner:
             importance = self.model.feature_importances_
             return dict(zip(self.feature_columns, importance))
         return {}
-    
-    def save_model(self, filepath: str):
-        """Save trained model
-        
-        Args:
-            filepath: Path to save model
-        """
-        model_data = {
-            'model': self.model,
-            'feature_columns': self.feature_columns,
-            'feature_engineer': self.feature_engineer,
-            'threshold_finder': self.threshold_finder
-        }
-        joblib.dump(model_data, filepath)
-    
-    def load_model(self, filepath: str):
-        """Load trained model
-        
-        Args:
-            filepath: Path to model file
-        """
-        model_data = joblib.load(filepath)
-        self.model = model_data['model']
-        self.feature_columns = model_data['feature_columns']
-        self.feature_engineer = model_data.get('feature_engineer', FeatureEngineer())
-        self.threshold_finder = model_data.get('threshold_finder', AdaptiveThresholdFinder())
     
     def analyze_sample(self, df: pd.DataFrame) -> Dict[str, Any]:
         """Analyze a single sample

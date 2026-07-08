@@ -22,7 +22,7 @@ New to Python? See [QUICKSTART.md](QUICKSTART.md); on Windows, simply double-cli
 | Five training datasets (per-grain tables) | `trained model/total<Sample>.xlsx` |
 | Expert reference thresholds and voxel sizes | [`examples/expert_thresholds.csv`](examples/expert_thresholds.csv) · `trained model/voxel_sizes.xlsx` |
 | Data provenance (localities, voxel sizes, grain counts) | [`examples/README.md`](examples/README.md) |
-| Pre-trained classifier | `trained model/last_time_model.pkl` |
+| Pre-trained classifier | `trained model/` — version-independent `last_time_model_portable/` bundle (+ `last_time_model.pkl` fallback) |
 | Cross-validation script (reproduces the reported AUC) | [`cross_validation.py`](cross_validation.py) |
 | Avizo-export conversion scripts | [`tools/BatchFile.py`](tools/BatchFile.py) · [`tools/To_tomofab.py`](tools/To_tomofab.py) |
 | Worked example (sample LE01) | `examples/Quantity_LE01.xlsx` · `outputs/LE01_*_MeanFabric.txt` |
@@ -45,7 +45,7 @@ Windows users can double-click `run_app.bat` instead; it checks the environment,
 
 With the pre-trained model:
 
-1. **Load Last Model** — loads the shipped classifier (`trained model/last_time_model.pkl`).
+1. **Load Last Model** — loads the shipped classifier from `trained model/` (a version-independent `last_time_model_portable/` bundle that loads across pandas/NumPy versions; `last_time_model.pkl` is kept as a fallback).
 2. **6a. Load Single Test Data** or **6b. Load Multi Test Data** — select the per-sample grain table(s); you will be asked for each sample's voxel size in mm.
 3. **7. Predict Analysis** — computes the objective loose and strict Vmin thresholds.
 4. **Mean Fabric** and **Fabric Boxplots** — compute the mean fabric tensor and the P′ and T parameters with 1,000-iteration bootstrap confidence intervals; **8. Export / Reports** writes tables and figures to `outputs/`.
@@ -90,7 +90,7 @@ See [`CITATION.cff`](CITATION.cff), or:
   title   = {ML Threshold Selection: Machine Learning-Driven Adaptive Threshold Selection for XRCT Particle Analysis},
   author  = {Li, Puqing},
   year    = {2026},
-    version = {1.3.0},
+    version = {1.2},
   url     = {https://github.com/Puqing-Li/ML_Threshold_Selection},
   doi     = {10.5281/zenodo.18979422},
   license = {MIT}

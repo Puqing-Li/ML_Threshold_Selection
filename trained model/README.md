@@ -6,10 +6,14 @@ threshold prediction instantly without preparing training data.
 
 ## Contents
 
-1. **`last_time_model.pkl`**
-   - The pre-trained LightGBM classifier using the resolution-aware 7D
-     feature engineering (VoxelCount + six log-ellipsoid tensor components).
-   - Loaded via the **Load Last Model** button in the GUI.
+1. **Pre-trained classifier** — the resolution-aware 7D LightGBM model
+   (VoxelCount + six log-ellipsoid tensor components), loaded via the
+   **Load Last Model** button. Shipped in two forms:
+   - **`last_time_model_portable/`** — a version-independent bundle (LightGBM
+     native text + CSV + NumPy `.npy` + JSON) that loads across pandas / NumPy /
+     scikit-learn versions. Loaded preferentially.
+   - **`last_time_model.pkl`** — the original pickled bundle, kept as a
+     same-environment fallback.
 
 2. **Five training datasets (`total<Sample>.xlsx`)**
    - `totalAKAN20.xlsx`, `totalANA16937.xlsx`, `totalHL19335.xlsx`,

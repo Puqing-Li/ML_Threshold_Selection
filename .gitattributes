@@ -4,3 +4,8 @@
 # macOS / shell launchers must keep LF line endings or they will not run
 *.command text eol=lf
 *.sh text eol=lf
+
+# Pre-trained model bundle must be delivered byte-identical. LightGBM's native
+# text model refuses to load if line endings are converted to CRLF, and the
+# gzip CSV / NumPy .npy blobs must not be altered either.
+**/last_time_model_portable/** -text

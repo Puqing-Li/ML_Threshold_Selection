@@ -38,8 +38,10 @@ def export_publication_fig3(app):
     import matplotlib.pyplot as plt
     from matplotlib.lines import Line2D
     
-    # 1. Enforce PLOS ONE Styles
-    plt.rcParams['font.family'] = 'Arial'
+    # 1. Enforce PLOS ONE Styles (keep Arial when present, fall back cleanly
+    #    on Linux / bare environments where Arial is not installed)
+    plt.rcParams['font.family'] = 'sans-serif'
+    plt.rcParams['font.sans-serif'] = ['Arial', 'Helvetica', 'DejaVu Sans']
     plt.rcParams['font.size'] = 12
     plt.rcParams['axes.labelsize'] = 12
     plt.rcParams['xtick.labelsize'] = 10
@@ -261,7 +263,8 @@ def show_prediction_visualization(app):
 
     # 2. Replicate Fig 3 styling for the top-right subplot (axes[0, 1])
     plt.rcParams.update({
-        'font.family': 'Arial',
+        'font.family': 'sans-serif',
+        'font.sans-serif': ['Arial', 'Helvetica', 'DejaVu Sans'],
         'font.size': 12,
         'axes.labelsize': 11,
         'xtick.labelsize': 9,

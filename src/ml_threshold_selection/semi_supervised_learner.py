@@ -7,7 +7,6 @@ Semi-supervised learning system using expert thresholds
 import numpy as np
 import pandas as pd
 from typing import Optional, Tuple, Dict, Any, List
-import joblib
 import warnings
 from sklearn.ensemble import RandomForestClassifier
 try:
@@ -398,34 +397,6 @@ class SemiSupervisedThresholdLearner:
             importance = self.model.feature_importances_
             return dict(zip(self.feature_columns, importance))
         return {}
-    
-    def save_model(self, filepath: str):
-        """Save trained model
-        
-        Args:
-            filepath: Path to save model
-        """
-        model_data = {
-            'model': self.model,
-            'feature_columns': self.feature_columns,
-            'feature_engineer': self.feature_engineer,
-            'threshold_finder': self.threshold_finder,
-            'expert_thresholds': self.processor.expert_thresholds
-        }
-        joblib.dump(model_data, filepath)
-    
-    def load_model(self, filepath: str):
-        """Load trained model
-        
-        Args:
-            filepath: Path to model file
-        """
-        model_data = joblib.load(filepath)
-        self.model = model_data['model']
-        self.feature_columns = model_data['feature_columns']
-        self.feature_engineer = model_data.get('feature_engineer', FeatureEngineer())
-        self.threshold_finder = model_data.get('threshold_finder', AdaptiveThresholdFinder())
-        self.processor.expert_thresholds = model_data.get('expert_thresholds', {})
     
     def analyze_sample(self, df: pd.DataFrame) -> Dict[str, Any]:
         """Analyze a single sample

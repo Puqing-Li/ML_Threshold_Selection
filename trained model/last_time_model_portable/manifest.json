@@ -1,0 +1,514 @@
+{
+  "format_version": 1,
+  "keys": {
+    "model": {
+      "kind": "lgb_booster",
+      "file": "model.model.txt"
+    },
+    "training_data": {
+      "kind": "dataframe",
+      "file": "training_data.csv.gz"
+    },
+    "expert_thresholds": {
+      "kind": "dict",
+      "items": {
+        "totalAKAN20": {
+          "kind": "json",
+          "value": 0.0039
+        },
+        "totalANA16937": {
+          "kind": "json",
+          "value": 0.0008
+        },
+        "totalHL19335": {
+          "kind": "json",
+          "value": 0.001
+        },
+        "totalLE03": {
+          "kind": "json",
+          "value": 0.001
+        },
+        "totalLE19": {
+          "kind": "json",
+          "value": 0.0018
+        }
+      }
+    },
+    "voxel_sizes": {
+      "kind": "dict",
+      "items": {
+        "sample_001": {
+          "kind": "json",
+          "value": 0.03
+        },
+        "totalAKAN20": {
+          "kind": "json",
+          "value": 0.03
+        },
+        "totalANA16937": {
+          "kind": "json",
+          "value": 0.04
+        },
+        "totalHL19335": {
+          "kind": "json",
+          "value": 0.035
+        },
+        "totalLE03": {
+          "kind": "json",
+          "value": 0.03
+        },
+        "totalLE19": {
+          "kind": "json",
+          "value": 0.035
+        }
+      }
+    },
+    "training_files": {
+      "kind": "json",
+      "value": [
+        "D:/research/plosone/ML_Threshold_Selection copy 2/ML_Threshold_Selection copy 2/trained model/totalAKAN20.xlsx",
+        "D:/research/plosone/ML_Threshold_Selection copy 2/ML_Threshold_Selection copy 2/trained model/totalANA16937.xlsx",
+        "D:/research/plosone/ML_Threshold_Selection copy 2/ML_Threshold_Selection copy 2/trained model/totalHL19335.xlsx",
+        "D:/research/plosone/ML_Threshold_Selection copy 2/ML_Threshold_Selection copy 2/trained model/totalLE03.xlsx",
+        "D:/research/plosone/ML_Threshold_Selection copy 2/ML_Threshold_Selection copy 2/trained model/totalLE19.xlsx"
+      ]
+    },
+    "features": {
+      "kind": "dataframe",
+      "file": "features.csv.gz"
+    },
+    "training_results": {
+      "kind": "dict",
+      "items": {
+        "X": {
+          "kind": "dataframe",
+          "file": "training_results__X.csv.gz"
+        },
+        "y": {
+          "kind": "ndarray",
+          "file": "training_results__y.npy"
+        },
+        "train_proba": {
+          "kind": "ndarray",
+          "file": "training_results__train_proba.npy"
+        },
+        "train_pred": {
+          "kind": "ndarray",
+          "file": "training_results__train_pred.npy"
+        },
+        "train_auc": {
+          "kind": "json",
+          "value": 0.9890717455526256
+        },
+        "train_accuracy": {
+          "kind": "json",
+          "value": 0.9424534899986012
+        },
+        "precision": {
+          "kind": "json",
+          "value": 0.9546461402148633
+        },
+        "recall": {
+          "kind": "json",
+          "value": 0.9329977810250581
+        },
+        "f1": {
+          "kind": "json",
+          "value": 0.9436978240043794
+        },
+        "features": {
+          "kind": "dataframe",
+          "file": "training_results__features.csv.gz"
+        }
+      }
+    },
+    "ellipsoid_analysis_results": {
+      "kind": "dict",
+      "items": {
+        "feature_stats": {
+          "kind": "dict",
+          "items": {
+            "Volume": {
+              "kind": "dict",
+              "items": {
+                "removed_mean": {
+                  "kind": "json",
+                  "value": 17.467574585565437
+                },
+                "kept_mean": {
+                  "kind": "json",
+                  "value": 4288.401637616824
+                },
+                "removed_std": {
+                  "kind": "json",
+                  "value": 13.689445925708764
+                },
+                "kept_std": {
+                  "kind": "json",
+                  "value": 20050.19680064056
+                },
+                "cohens_d": {
+                  "kind": "json",
+                  "value": -0.30647226258288396
+                },
+                "p_value": {
+                  "kind": "json",
+                  "value": 3.127909818135108e-182
+                },
+                "relative_difference": {
+                  "kind": "json",
+                  "value": 99.59267867001206
+                },
+                "is_significant": {
+                  "kind": "json",
+                  "value": true
+                },
+                "t_statistic": {
+                  "kind": "json",
+                  "value": -28.95478025419962
+                }
+              }
+            },
+            "L11": {
+              "kind": "dict",
+              "items": {
+                "removed_mean": {
+                  "kind": "json",
+                  "value": -3.6610802551940282
+                },
+                "kept_mean": {
+                  "kind": "json",
+                  "value": -2.5596479446423155
+                },
+                "removed_std": {
+                  "kind": "json",
+                  "value": 0.3154748949678841
+                },
+                "kept_std": {
+                  "kind": "json",
+                  "value": 0.777950474922611
+                },
+                "cohens_d": {
+                  "kind": "json",
+                  "value": -1.8784361279750088
+                },
+                "p_value": {
+                  "kind": "json",
+                  "value": 0.0
+                },
+                "relative_difference": {
+                  "kind": "json",
+                  "value": 43.030617271299256
+                },
+                "is_significant": {
+                  "kind": "json",
+                  "value": true
+                },
+                "t_statistic": {
+                  "kind": "json",
+                  "value": -177.47023775881362
+                }
+              }
+            },
+            "L22": {
+              "kind": "dict",
+              "items": {
+                "removed_mean": {
+                  "kind": "json",
+                  "value": -3.6383142587911776
+                },
+                "kept_mean": {
+                  "kind": "json",
+                  "value": -2.6051630964330865
+                },
+                "removed_std": {
+                  "kind": "json",
+                  "value": 0.35013762974773555
+                },
+                "kept_std": {
+                  "kind": "json",
+                  "value": 0.7308129244579782
+                },
+                "cohens_d": {
+                  "kind": "json",
+                  "value": -1.8224375748436425
+                },
+                "p_value": {
+                  "kind": "json",
+                  "value": 0.0
+                },
+                "relative_difference": {
+                  "kind": "json",
+                  "value": 39.65783039736175
+                },
+                "is_significant": {
+                  "kind": "json",
+                  "value": true
+                },
+                "t_statistic": {
+                  "kind": "json",
+                  "value": -172.1796258554498
+                }
+              }
+            },
+            "L33": {
+              "kind": "dict",
+              "items": {
+                "removed_mean": {
+                  "kind": "json",
+                  "value": -4.0060873286672924
+                },
+                "kept_mean": {
+                  "kind": "json",
+                  "value": -2.6969468671379127
+                },
+                "removed_std": {
+                  "kind": "json",
+                  "value": 0.3812048256949334
+                },
+                "kept_std": {
+                  "kind": "json",
+                  "value": 0.8071691880375703
+                },
+                "cohens_d": {
+                  "kind": "json",
+                  "value": -2.0966829366372632
+                },
+                "p_value": {
+                  "kind": "json",
+                  "value": 0.0
+                },
+                "relative_difference": {
+                  "kind": "json",
+                  "value": 48.541574084426884
+                },
+                "is_significant": {
+                  "kind": "json",
+                  "value": true
+                },
+                "t_statistic": {
+                  "kind": "json",
+                  "value": -198.08968414113315
+                }
+              }
+            },
+            "sqrt2_L12": {
+              "kind": "dict",
+              "items": {
+                "removed_mean": {
+                  "kind": "json",
+                  "value": 0.001415913044372654
+                },
+                "kept_mean": {
+                  "kind": "json",
+                  "value": 0.02649015017448027
+                },
+                "removed_std": {
+                  "kind": "json",
+                  "value": 0.17202917914051666
+                },
+                "kept_std": {
+                  "kind": "json",
+                  "value": 0.28445214345589837
+                },
+                "cohens_d": {
+                  "kind": "json",
+                  "value": -0.10751913333658648
+                },
+                "p_value": {
+                  "kind": "json",
+                  "value": 3.287781026630547e-24
+                },
+                "relative_difference": {
+                  "kind": "json",
+                  "value": 94.65494519643495
+                },
+                "is_significant": {
+                  "kind": "json",
+                  "value": false
+                },
+                "t_statistic": {
+                  "kind": "json",
+                  "value": -10.158155431899495
+                }
+              }
+            },
+            "sqrt2_L13": {
+              "kind": "dict",
+              "items": {
+                "removed_mean": {
+                  "kind": "json",
+                  "value": -0.004575943088148532
+                },
+                "kept_mean": {
+                  "kind": "json",
+                  "value": -0.04102585286717254
+                },
+                "removed_std": {
+                  "kind": "json",
+                  "value": 0.2504745439191928
+                },
+                "kept_std": {
+                  "kind": "json",
+                  "value": 0.30367003629127537
+                },
+                "cohens_d": {
+                  "kind": "json",
+                  "value": 0.13137516850870457
+                },
+                "p_value": {
+                  "kind": "json",
+                  "value": 2.6597016196670514e-35
+                },
+                "relative_difference": {
+                  "kind": "json",
+                  "value": 88.84619631683503
+                },
+                "is_significant": {
+                  "kind": "json",
+                  "value": false
+                },
+                "t_statistic": {
+                  "kind": "json",
+                  "value": 12.412017658528656
+                }
+              }
+            },
+            "sqrt2_L23": {
+              "kind": "dict",
+              "items": {
+                "removed_mean": {
+                  "kind": "json",
+                  "value": 0.005365465484601303
+                },
+                "kept_mean": {
+                  "kind": "json",
+                  "value": -0.010388600792531965
+                },
+                "removed_std": {
+                  "kind": "json",
+                  "value": 0.2581756540333624
+                },
+                "kept_std": {
+                  "kind": "json",
+                  "value": 0.29434335462386124
+                },
+                "cohens_d": {
+                  "kind": "json",
+                  "value": 0.0570304201526971
+                },
+                "p_value": {
+                  "kind": "json",
+                  "value": 7.165579289518894e-08
+                },
+                "relative_difference": {
+                  "kind": "json",
+                  "value": 151.6476240809866
+                },
+                "is_significant": {
+                  "kind": "json",
+                  "value": false
+                },
+                "t_statistic": {
+                  "kind": "json",
+                  "value": 5.388100278339007
+                }
+              }
+            }
+          }
+        },
+        "selected_features": {
+          "kind": "dict",
+          "items": {
+            "joshua_selected": {
+              "kind": "json",
+              "value": [
+                "Volume",
+                "L11",
+                "L22",
+                "L33",
+                "sqrt2_L12",
+                "sqrt2_L13",
+                "sqrt2_L23"
+              ]
+            },
+            "significant_features": {
+              "kind": "json",
+              "value": [
+                "Volume",
+                "L11",
+                "L22",
+                "L33"
+              ]
+            },
+            "high_effect_features": {
+              "kind": "json",
+              "value": []
+            }
+          }
+        },
+        "correlation_matrix": {
+          "kind": "dataframe",
+          "file": "ellipsoid_analysis_results__correlation_matrix.csv.gz"
+        },
+        "features_df": {
+          "kind": "dataframe",
+          "file": "ellipsoid_analysis_results__features_df.csv.gz"
+        },
+        "removed_particles": {
+          "kind": "dataframe",
+          "file": "ellipsoid_analysis_results__removed_particles.csv.gz"
+        },
+        "kept_particles": {
+          "kind": "dataframe",
+          "file": "ellipsoid_analysis_results__kept_particles.csv.gz"
+        }
+      }
+    },
+    "resolution_aware_engineer": {
+      "kind": "engineer",
+      "is_fitted": true,
+      "current_voxel_size_mm": 0.03,
+      "scaler": {
+        "mean": [
+          0.06923703703703706,
+          3.3927677891953714,
+          -1.0965325519188658,
+          -1.0543857027730155,
+          5.556166295522862,
+          2.402610805942685,
+          4.393583992308917
+        ],
+        "scale": [
+          0.034105489543614566,
+          2.621852198955689,
+          4.847325743932531,
+          4.816903971017095,
+          3.153688676889214,
+          2.0052462860932234,
+          3.102616530546266
+        ],
+        "var": [
+          0.0011631844170096027,
+          6.874108953168781,
+          23.496566867791064,
+          23.20256386600026,
+          9.94575227073924,
+          4.021012667890666,
+          9.626229335618948
+        ],
+        "n_features_in": 7,
+        "feature_names_in": [
+          "VoxelCount",
+          "L11",
+          "L22",
+          "L33",
+          "sqrt2_L12",
+          "sqrt2_L13",
+          "sqrt2_L23"
+        ],
+        "n_samples_seen": 5
+      }
+    }
+  }
+}
