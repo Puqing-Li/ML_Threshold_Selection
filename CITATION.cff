@@ -5,8 +5,8 @@ title: "ML Threshold Selection: Machine Learning-Driven Adaptive Threshold Selec
 authors:
   - family-names: "Li"
     given-names: "Puqing"
-version: 1.2
-date-released: 2026-07-03
+version: 1.2.1
+date-released: 2026-07-13
 license: MIT
 repository-code: "https://github.com/Puqing-Li/ML_Threshold_Selection"
 doi: 10.5281/zenodo.18979422

@@ -90,7 +90,7 @@ See [`CITATION.cff`](CITATION.cff), or:
   title   = {ML Threshold Selection: Machine Learning-Driven Adaptive Threshold Selection for XRCT Particle Analysis},
   author  = {Li, Puqing},
   year    = {2026},
-    version = {1.2},
+    version = {1.2.1},
   url     = {https://github.com/Puqing-Li/ML_Threshold_Selection},
   doi     = {10.5281/zenodo.18979422},
   license = {MIT}
