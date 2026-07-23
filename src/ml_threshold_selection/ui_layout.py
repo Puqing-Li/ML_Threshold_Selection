@@ -39,8 +39,8 @@ def build_main_ui(app):
     title_label.pack(anchor=tk.W)
 
     status_text = []
-    status_text.append("Model: LightGBM ✅" if app.LIGHTGBM_AVAILABLE else "Model: LightGBM ❌")
-    status_text.append("Modules: Full ✅" if app.FULL_MODULES_AVAILABLE else "Modules: Full ❌")
+    status_text.append("Model: LightGBM available" if app.LIGHTGBM_AVAILABLE else "Model: LightGBM NOT available")
+    status_text.append("Modules: Full available" if app.FULL_MODULES_AVAILABLE else "Modules: Full NOT available")
     status_label = ttk.Label(
         header_frame,
         text=" | ".join(status_text),

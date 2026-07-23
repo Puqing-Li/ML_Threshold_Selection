@@ -154,19 +154,19 @@ When creating a pull request, please include:
 
 ```
 src/ml_threshold_selection/
-├── app_controller.py          # GUI controller
-├── ui_layout.py              # Tkinter interface
-├── ui_visualization.py       # Plotting utilities
-├── data_io.py                # Data loading/saving
-├── training_pipeline.py      # Training workflow
-├── prediction_analysis.py    # Prediction analysis
-├── export_results.py         # Results export
-├── labeling.py               # Label generation
-├── feature_utils.py          # Feature utilities
-├── fabric_thresholds.py      # Threshold grid helpers
-├── fabric_bootstrap.py       # Bootstrap analysis
-├── fabric_logging.py         # Logging utilities
-└── fabric_pipeline.py        # Fabric analysis pipeline
++-- app_controller.py          # GUI controller
++-- ui_layout.py              # Tkinter interface
++-- ui_visualization.py       # Plotting utilities
++-- data_io.py                # Data loading/saving
++-- training_pipeline.py      # Training workflow
++-- prediction_analysis.py    # Prediction analysis
++-- export_results.py         # Results export
++-- labeling.py               # Label generation
++-- feature_utils.py          # Feature utilities
++-- fabric_thresholds.py      # Threshold grid helpers
++-- fabric_bootstrap.py       # Bootstrap analysis
++-- fabric_logging.py         # Logging utilities
+\-- fabric_pipeline.py        # Fabric analysis pipeline
 ```
 
 ## Areas for Contribution

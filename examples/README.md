@@ -1,16 +1,21 @@
 # Examples and reference data
 
-## `expert_thresholds.csv` — expert reference thresholds (ground truth)
+## `expert_thresholds.csv` — expert reference thresholds
 
 One row per training sample: `SampleID, ExpertThreshold_mm3, VoxelSize_mm`.
 
-The expert threshold (Vmin, in mm³) was determined **independently of the
-classifier** by stereonet inspection in TomoFab, following Step 53 of the
-protocol: the volume threshold was increased until the aliasing artifacts
-(point maxima aligned with the XRCT instrument X/Y/Z axes) disappeared from
-the eigenvector stereonets. These values seed the semi-supervised labelling
-and serve as the independent benchmark in the cross-validation
-(`cross_validation.py`, S3 Fig of the article).
+The configured expert threshold (Vmin, in mm³) predates classifier fitting and
+was entered in the original interface as the result of stereonet inspection in
+TomoFab: the volume threshold was increased until scan-axis-aligned maxima were
+judged to have disappeared. The repository history preserves these values from
+the initial March 2026 commit, but it does not contain the original reader,
+date, stereonet sequence, or decision log; users should therefore treat them as
+historical configured expert inputs rather than independently adjudicated
+ground truth. The reported model is supervised using these labels; it is not
+semi-supervised learning because no unlabeled observations enter model fitting.
+High leave-one-sample-out AUC measures object ranking against the volume rule,
+not independent physical artifact identification. Expert thresholds remain in
+mm3; voxel equivalents use each row's measured voxel size.
 
 | Sample | Locality (Newer Volcanic Province, Australia) | Voxel size (mm) | Segmented objects | Expert Vmin (mm³) |
 |---|---|---|---|---|
@@ -22,15 +27,18 @@ and serve as the independent benchmark in the cross-validation
 
 Total: 35,745 segmented objects across the five training samples.
 The corresponding per-grain tables (`total<Sample>.xlsx`) ship in the
-`trained model/` folder; the voxel sizes are also recorded in
-`trained model/voxel_sizes.xlsx`.
+`training_data/` folder; the voxel sizes and expert thresholds are recorded in
+`training_data/training_config.csv`.
 
 ## `Quantity_LE01.xlsx` — worked-example input
 
 Per-grain morphometric table for sample LE01 (lherzolite, Mount Leura), the
-worked example of the article (Figs 1, 3, 4). Produced from the raw Avizo
-Label-Analysis export with `tools/BatchFile.py`. Load it in the GUI via
-**6. Load Test Data** to reproduce the LE01 analysis; the corresponding
+worked example of the article (Figs 1, 3, 4). This is a legacy table produced
+from the raw Avizo Label-Analysis export with an earlier `tools/BatchFile.py`,
+which removed rows with a zero eigenvalue or exported `Anisotropy == 1` before
+the retained 4,991-object table was saved. The raw prefilter counts are not
+available in this repository. Load it in the GUI via
+**6a. Load Single Test Data** to reproduce the LE01 analysis; the corresponding
 outputs (`LE01_Loose_MeanFabric.txt`, `LE01_Strict_MeanFabric.txt`) are in
 the `outputs/` folder.
 

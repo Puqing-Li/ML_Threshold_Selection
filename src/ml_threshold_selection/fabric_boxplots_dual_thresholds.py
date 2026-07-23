@@ -46,8 +46,7 @@ def compute_fabric_params(eigenvals: Sequence[float]) -> Tuple[float, float]:
         T = (ln2 - ln3 - ln1 + ln2) / (ln2 - ln3 + ln1 - ln2)
 
     # P' (Jelínek 1981)
-    lm = (l1 + l2 + l3) / 3.0
-    ln_m = np.log(lm)
+    ln_m = (ln1 + ln2 + ln3) / 3.0
     P_prime = float(np.exp(np.sqrt(2.0 * ((ln1 - ln_m) ** 2 + (ln2 - ln_m) ** 2 + (ln3 - ln_m) ** 2))))
     return T, P_prime
 
@@ -209,7 +208,7 @@ def plot_param_boxplot_by_volume_thresholds(
     # Legend perfectly tailored to 1:1 image style
     legend_elements = [
         Patch(facecolor=COLOR_LOOSE, edgecolor=EDGE_COLOR, label="ML Loose Threshold (inflection)"),
-        Patch(facecolor=COLOR_STRICT, edgecolor=EDGE_COLOR, label="ML Strict Threshold (Zero artifact)"),
+        Patch(facecolor=COLOR_STRICT, edgecolor=EDGE_COLOR, label="ML strict threshold (P tolerance)"),
         Patch(facecolor=COLOR_BELOW, edgecolor=EDGE_COLOR, label="Below loose threshold"),
         Patch(facecolor=COLOR_ABOVE, edgecolor=EDGE_COLOR, label="Above loose threshold (excluding strict)"),
         Line2D([0], [0], color=EDGE_COLOR, lw=1.5, linestyle="-", label="Median (solid)"),

@@ -1,82 +1,39 @@
-# Quick Start — no coding experience required
+# Quick Start
 
-This guide gets you from zero to a working analysis using only your mouse.
-(Everything here is also covered, with screenshots, in the step-by-step
-protocol: https://dx.doi.org/10.17504/protocols.io.n92ld16znl5b)
+This project contains training data but no pre-trained classifier. The first
+session therefore starts with training.
 
-## What this tool does (in one paragraph)
+## Windows
 
-XRCT scans of rocks contain thousands of tiny segmented objects that are not
-real grains — they are few-voxel artifacts that distort any fabric (SPO)
-measurement. This tool uses a pre-trained machine-learning classifier to find
-an **objective minimum grain-volume threshold (Vmin)** for each sample, filters
-the artifacts out, and then computes the mean fabric tensor and the fabric
-parameters **P′** (anisotropy) and **T** (shape), with bootstrap confidence
-intervals.
+1. Double-click `run_app.bat`.
+2. Select the five XLSX files in `training_data/` with names beginning `total`.
+3. Enter the expert thresholds from `training_data/training_config.csv` in Step
+   2. Units are mm3.
+4. Enter each sample's measured `VoxelSize_mm` in Step 3. Leave no row blank.
+5. Click **5. Train Model**.
 
-## Step 1 — Install Python (once, ~5 minutes)
+The application saves the resulting classifier in `models/`. A later session
+can use **Load Last Model**.
 
-1. Go to https://www.python.org/downloads/ and download Python 3.8 or newer.
-2. Run the installer. **IMPORTANT: tick the box "Add python.exe to PATH"**
-   on the first installer screen. Everything else: just click "Install".
+## Training values supplied with the project
 
-## Step 2 — Download this repository (once)
+| Sample | Expert threshold (mm3) | Voxel size (mm/voxel) |
+|---|---:|---:|
+| AKAN20 | 0.0039 | 0.030 |
+| ANA16937 | 0.0008 | 0.040 |
+| HL19335 | 0.0010 | 0.035 |
+| LE03 | 0.0010 | 0.030 |
+| LE19 | 0.0018 | 0.035 |
 
-- On the GitHub page, click the green **`<> Code`** button → **Download ZIP**.
-- Unzip it anywhere (e.g. your Desktop).
+## Analyse a new sample
 
-## Step 3 — Launch the app (every time)
+1. Load the trained model.
+2. Load the test XLSX/CSV table.
+3. Enter that scan's measured voxel size in mm/voxel.
+4. Run **Predict Analysis**.
+5. Export the loose/strict tables and calculate Mean Fabric or bootstrap
+   boxplots as needed.
 
-- **Windows**: open the unzipped folder and **double-click `run_app.bat`**.
-  The first run installs the required libraries automatically (needs internet);
-  after that it starts in seconds. A window titled
-  **"ML Threshold Selection System"** will open.
-- **macOS**: open the unzipped folder and **double-click `run_app.command`**.
-  (The first time, macOS may block it: right-click `run_app.command` →
-  **Open** → **Open**, once. After that a normal double-click works.)
-  The first run installs the required libraries automatically (needs internet).
-- **Linux / manual**: open a terminal in the unzipped folder and run:
-  ```bash
-  pip install -r requirements.txt && python3 main.py
-  ```
-
-## Step 4 — Analyse a sample (mouse only)
-
-The buttons are numbered in the order you use them. For a typical analysis
-with our pre-trained model you only need four clicks:
-
-1. **Load Last Model** — loads the pre-trained classifier shipped in the
-   `trained model` folder (no training needed).
-2. **6a. Load Single Test Data** (or **6b. Load Multi Test Data**) — select
-   your sample table(s) (`total<Sample>.xlsx`; see Step 5 below). You will be
-   asked for the voxel size of each sample in mm (e.g. 0.03).
-3. **7. Predict Analysis** — computes the objective loose/strict thresholds.
-4. **Mean Fabric** and **Fabric Boxplots** — compute the fabric tensor, P′ and
-   T with bootstrap confidence intervals, and save publication-quality figures
-   and `.txt` results into the `outputs` folder.
-
-(To retrain the classifier on your own samples instead, follow buttons
-1 → 2 → 3 → 5 as described in the protocol, Steps 52–55.)
-
-## Step 5 — Prepare your own data (from Avizo)
-
-Your Avizo *Label-Analysis* export cannot be used directly — two double-click
-tools convert it:
-
-1. **`tools/run_BatchFile`** (`.bat` on Windows, `.command` on macOS) — select
-   your raw Avizo CSV export(s); it produces `total<Sample>.xlsx` (the app's
-   input). Enter a volume threshold of 0 when asked, unless you already know one.
-2. **`tools/run_To_tomofab`** (`.bat` on Windows, `.command` on macOS) — only
-   needed for training samples that go to TomoFab; produces `TT_total<Sample>.xls`.
-
-## Troubleshooting
-
-| Problem | Fix |
-|---|---|
-| Double-clicking does nothing / window flashes | Install Python from python.org and tick **"Add python.exe to PATH"**, then retry |
-| "Python was not found" | Same as above |
-| Window does not open, Tkinter error | Your Python lacks Tkinter. Use the python.org installer (includes it), or in Anaconda: `conda install tk` |
-| Library installation fails | Check your internet connection / proxy, then double-click again |
-| "Missing required columns" | Your table must contain `Volume3d (mm^3) `, `EigenVal1-3`, `EigenVec1-3 X/Y/Z` (note the trailing space in the volume header — keep the original Avizo headers, or use `tools/run_BatchFile.bat`) |
-
-Still stuck? Open an issue on GitHub, or check `docs/user_guide.md`.
+The program will stop if a required voxel size, expert threshold, physical
+volume, eigenvalue, or eigenvector is missing or invalid. It does not insert a
+default resolution or replace invalid geometry with a small number.

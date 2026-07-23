@@ -134,5 +134,22 @@ def test_load_last_prefers_portable_over_pickle(tmp_path):
     assert np.array_equal(loaded['model'].predict(feats.values), md['model'].predict(feats.values))
 
 
+def test_load_last_does_not_hide_a_corrupt_portable_bundle(tmp_path):
+    md, _, _ = _build_model_data()
+    iop.auto_save(outputs_dir=str(tmp_path), **md)
+    manifest = tmp_path / iop.PORTABLE_DIRNAME / 'manifest.json'
+    manifest.write_text('{broken json', encoding='utf-8')
+
+    with pytest.raises(json.JSONDecodeError):
+        iop.load_last(str(tmp_path))
+
+
+def test_auto_save_marks_resolution_aware_feature_schema(tmp_path):
+    md, _, _ = _build_model_data()
+    iop.auto_save(outputs_dir=str(tmp_path), **md)
+    loaded = iop.load_portable(str(tmp_path))
+    assert loaded['feature_schema_version'] == iop.FEATURE_SCHEMA_VERSION
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-q"])

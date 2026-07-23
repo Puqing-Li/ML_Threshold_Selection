@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Semi-supervised learning system using expert thresholds
+"""Expert-threshold pseudo-label training.
+
+The module and public class retain their historical names for compatibility.
+The implemented methods do not use unlabeled observations, so the reported
+workflow is supervised learning with expert-derived pseudo-labels.
 """
 
 import numpy as np
@@ -138,8 +141,8 @@ class ExpertThresholdProcessor:
         
         # Hard labels for certain regions
         hard_labels = np.zeros(len(volumes))
-        hard_labels[volumes < lower_bound] = 1  # Certain artifacts
-        hard_labels[volumes > upper_bound] = 0  # Certain normal particles
+        hard_labels[volumes < lower_bound] = 1  # Below-threshold class
+        hard_labels[volumes > upper_bound] = 0  # Retained class
         
         # Probabilistic labels for uncertainty region
         uncertain_mask = (volumes >= lower_bound) & (volumes <= upper_bound)
@@ -190,10 +193,10 @@ class ExpertThresholdProcessor:
 
 
 class SemiSupervisedThresholdLearner:
-    """Semi-supervised learning system using expert thresholds"""
+    """Legacy API for supervised training with expert-derived pseudo-labels."""
     
     def __init__(self, random_state: int = 42):
-        """Initialize semi-supervised learner
+        """Initialize the expert-threshold pseudo-label learner.
         
         Args:
             random_state: Random seed for reproducibility
@@ -231,7 +234,7 @@ class SemiSupervisedThresholdLearner:
     
     def train(self, method: str = 'threshold_based', 
               model_type: str = 'lightgbm') -> Dict[str, Any]:
-        """Train semi-supervised model
+        """Train a model on expert-derived pseudo-labels.
         
         Args:
             method: Pseudo-label generation method
@@ -352,13 +355,13 @@ class SemiSupervisedThresholdLearner:
         self.model.fit(X, y_hard)
     
     def predict_proba(self, X: pd.DataFrame) -> np.ndarray:
-        """Predict artifact probabilities
+        """Predict probabilities of the expert-defined below-threshold class.
         
         Args:
             X: Feature matrix
             
         Returns:
-            Array of artifact probabilities
+            Array of below-threshold-class probabilities
         """
         if self.model is None:
             raise ValueError("Model not trained yet")
@@ -376,8 +379,8 @@ class SemiSupervisedThresholdLearner:
         """Find optimal threshold
         
         Args:
-            volumes: Array of particle volumes
-            probabilities: Array of artifact probabilities
+            volumes: Array of object volumes
+            probabilities: Array of below-threshold-class probabilities
             
         Returns:
             Tuple of (optimal_threshold, uncertainty)

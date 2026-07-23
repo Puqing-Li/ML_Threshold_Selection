@@ -1,5 +1,6 @@
 # Standard Python ignore rules
 __pycache__/
+.pytest_cache/
 *.py[cod]
 *$py.class
 
@@ -13,3 +14,12 @@ Thumbs.db
 .venv/
 venv/
 env/
+build/
+dist/
+*.egg-info/
+
+# Generated model and analysis artifacts
+models/*
+!models/README.md
+outputs/*
+!outputs/README.md

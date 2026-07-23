@@ -1,112 +1,162 @@
-# ML Threshold Selection
+# ML Threshold Selection v1.3.0
 
-[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+Machine-learning-assisted selection of the minimum object-volume threshold
+(`Vmin`) for XRCT particle analysis. The application trains a classifier from
+expert-labelled samples, applies sample-specific scan resolution during feature
+construction, and computes 3D mean-fabric, P' and T after filtering.
 
-Machine-learning-based selection of the minimum grain-volume threshold (Vmin) for X-ray computed tomography (XRCT) particle analysis, with mean fabric-tensor computation (P′ and T; Jelínek, 1981) and bootstrap uncertainty estimation.
+This repository intentionally ships **without a trained model**. Train a new
+model from the supplied five tables or from your own expert-labelled samples.
 
-Segmented objects that span only a few voxels have poorly constrained best-fit ellipsoids whose axes align with the scanner coordinate system, producing artificial orientation clustering that masks the true rock fabric. This toolkit classifies such artifacts with a gradient-boosted model (LightGBM) built on seven resolution-aware features — a continuous voxel count plus the six components of the log-ellipsoid tensor — derives objective "loose" and "strict" volume thresholds from the cumulative artifact-rate curve, and computes the mean fabric tensor with bootstrap confidence intervals from the filtered grain population.
+## What changed in v1.3.0
 
-- **Companion article**: Li P, Chatzaras V, Foley M, Özaydın S, Rey PF. *A standardized XRCT protocol for quantitative 3D shape preferred orientation analysis in rocks.* PLOS ONE (in revision).
-- **Step-by-step protocol**: [protocols.io](https://dx.doi.org/10.17504/protocols.io.n92ld16znl5b)
-- **Archived releases**: [doi.org/10.5281/zenodo.18979422](https://doi.org/10.5281/zenodo.18979422)
+- Every training and test sample requires its own measured voxel edge length in
+  mm/voxel. There is no `0.03 mm` default or first-sample fallback.
+- The model input is continuous voxel count,
+  `Volume3d_mm3 / VoxelSize_mm^3`, plus six log-ellipsoid tensor components.
+- Expert labels are assigned directly in physical volume:
+  `Volume3d_mm3 < ExpertThreshold_mm3`. The expert threshold is not rounded to
+  an integer voxel count during labelling.
+- Equivalent-ellipsoid semiaxes are calculated as `sqrt(5 * EigenVal)`.
+- Invalid volumes, eigenvalues, eigenvectors, and incomplete voxel-size maps
+  stop the workflow instead of being replaced by numerical defaults.
+- Saved models carry feature schema
+  `resolution_aware_v2_per_sample_sqrt5`; legacy global-0.03 bundles are
+  rejected by the current loader.
 
-New to Python? See [QUICKSTART.md](QUICKSTART.md); on Windows, simply double-click `run_app.bat`.
-
-## Repository guide
+## Repository layout
 
 | Content | Location |
 |---|---|
-| Method details (features, thresholds, fabric parameters) | [`docs/SCIENTIFIC_METHODS.md`](docs/SCIENTIFIC_METHODS.md) |
-| User guide (GUI, command line, Python API) | [`docs/user_guide.md`](docs/user_guide.md) |
-| Five training datasets (per-grain tables) | `trained model/total<Sample>.xlsx` |
-| Expert reference thresholds and voxel sizes | [`examples/expert_thresholds.csv`](examples/expert_thresholds.csv) · `trained model/voxel_sizes.xlsx` |
-| Data provenance (localities, voxel sizes, grain counts) | [`examples/README.md`](examples/README.md) |
-| Pre-trained classifier | `trained model/` — version-independent `last_time_model_portable/` bundle (+ `last_time_model.pkl` fallback) |
-| Cross-validation script (reproduces the reported AUC) | [`cross_validation.py`](cross_validation.py) |
-| Avizo-export conversion scripts | [`tools/BatchFile.py`](tools/BatchFile.py) · [`tools/To_tomofab.py`](tools/To_tomofab.py) |
-| Worked example (sample LE01) | `examples/Quantity_LE01.xlsx` · `outputs/LE01_*_MeanFabric.txt` |
-| Example TomoFab input file | `examples/TT_totalLE19.xls` |
+| Five training tables and authoritative input values | `training_data/` |
+| Generated model bundles | `models/` |
+| Generated tables, reports and figures | `outputs/` |
+| Worked input and TomoFab-format examples | `examples/` |
+| Scientific definitions | `docs/SCIENTIFIC_METHODS.md` |
+| Detailed GUI guide | `docs/user_guide.md` |
+| Avizo conversion utilities | `tools/` |
+| Tests | `tests/` |
 
 ## Installation
 
-Requires Python 3.8 or newer with Tkinter (included in the python.org installers; on conda: `conda install tk`). A standard desktop or laptop workstation is sufficient (16–32 GB RAM, no GPU); threshold prediction and fabric calculation take under one minute per sample.
+Python 3.9 or newer with Tkinter is required.
 
 ```bash
 git clone https://github.com/Puqing-Li/ML_Threshold_Selection.git
 cd ML_Threshold_Selection
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 python main.py
 ```
 
-Windows users can double-click `run_app.bat` instead; it checks the environment, installs the dependencies, and launches the application.
+On Windows, double-click `run_app.bat` to install dependencies and launch the
+application.
 
-## Usage
+## Train a new model
 
-With the pre-trained model:
+The supplied values are recorded in `training_data/training_config.csv`.
 
-1. **Load Last Model** — loads the shipped classifier from `trained model/` (a version-independent `last_time_model_portable/` bundle that loads across pandas/NumPy versions; `last_time_model.pkl` is kept as a fallback).
-2. **6a. Load Single Test Data** or **6b. Load Multi Test Data** — select the per-sample grain table(s); you will be asked for each sample's voxel size in mm.
-3. **7. Predict Analysis** — computes the objective loose and strict Vmin thresholds.
-4. **Mean Fabric** and **Fabric Boxplots** — compute the mean fabric tensor and the P′ and T parameters with 1,000-iteration bootstrap confidence intervals; **8. Export / Reports** writes tables and figures to `outputs/`.
+1. Click **1. Load Training Data** and select all five
+   `training_data/total<SampleID>.xlsx` files.
+2. Click **2. Input Expert Thresholds** and enter, in mm3:
 
-To retrain the classifier on your own samples, follow the numbered buttons 1–5 (protocol Steps 52–55; see `docs/user_guide.md`).
+   ```text
+   AKAN20:0.0039
+   ANA16937:0.0008
+   HL19335:0.0010
+   LE03:0.0010
+   LE19:0.0018
+   ```
 
-## Input data
+3. Click **3. Input Voxel Sizes** and enter the measured values in mm/voxel:
 
-Input tables (XLSX or CSV) must contain the following columns, as exported by Avizo Label Analysis:
+   ```text
+   AKAN20     0.030
+   ANA16937  0.040
+   HL19335   0.035
+   LE03      0.030
+   LE19      0.035
+   ```
 
-| Column | Description |
-|---|---|
-| `Volume3d (mm^3) ` | Object volume (note the trailing space in the Avizo header) |
-| `EigenVal1`–`EigenVal3` | Ellipsoid tensor eigenvalues |
-| `EigenVec1X`–`EigenVec3Z` | Principal axis orientations (nine components) |
+4. Optionally run **4. Feature Analysis**.
+5. Click **5. Train Model**. The new classifier and fitted scaler are saved in
+   `models/` only after training succeeds.
 
-## Data preparation (from a raw Avizo export)
+The displayed training AUC and accuracy are fit diagnostics. They are not an
+independent validation of scalar-threshold recovery.
 
-Raw Avizo Label-Analysis exports are not used directly: the first row holds the object name, most headers carry a trailing space, and the column order does not match TomoFab's schema. Two scripts in `tools/` automate the conversion (both open a file-picker dialog; Windows users can double-click the matching `run_*.bat`):
+The active workflow is supervised: expert-selected physical-volume thresholds
+generate deterministic grain-level pseudo-labels, and LightGBM is fitted to
+those labels. No unlabeled observations enter model fitting. The resulting
+scores therefore measure agreement with the configured pseudo-label rule, not
+independent identification of physical artifacts.
 
-1. `tools/BatchFile.py` — cleaning and app format. Removes the object-name row and degenerate objects (zero eigenvalues or Anisotropy = 1), and per sample writes the full-column `total<Sample>.xlsx` (the app input; the files in `trained model/` were produced this way), a volume-filtered `Quantity_<Sample>.xlsx`, and the intermediate `<Sample>.xlsx`, `Eigens<Sample>.xlsx` and `VolumeEigen<Sample>.xlsx` tables. Residual zeros in the eigen columns are replaced with 1e-8 to prevent logarithmic singularities.
-2. `tools/To_tomofab.py` — TomoFab format. Reads a `total<Sample>.xlsx` table (which retains the `index`, `Volume3d`, `BaryCenter`, `EigenVal` and `EigenVec` columns) and writes a tab-separated `TT_total<Sample>.xls` with the TomoFab header schema (the `TT_` prefix is prepended to the whole input filename, e.g. `totalLE19.xlsx` becomes `TT_totalLE19.xls`). An example output is provided (`examples/TT_totalLE19.xls`).
+## Apply the trained model
 
-TomoFab is a separate, third-party open-source MATLAB code (Petri et al., 2020); it is not part of this repository — download it from https://github.com/benpetri/tomofab.
+1. In a new session, click **Load Last Model**.
+2. Load one or more test tables with **6a** or **6b**.
+3. Enter the measured voxel size for every test sample. No value is inferred.
+4. Click **7. Predict Analysis**.
+5. Use **Mean Fabric**, **Fabric Boxplots**, and **8. Export / Reports** as
+   required.
 
-Pipeline: Avizo export → `BatchFile.py` → `total*.xlsx` → GUI app (threshold selection and fabric), and → `To_tomofab.py` → `TT_*.xls` → TomoFab (expert reference threshold, training samples only).
+The loose threshold is derived from the cumulative model-score curve. The
+strict threshold is one voxel above the largest object whose predicted
+artifact probability exceeds the configured tolerance, so every flagged
+object is excluded by a `Volume >= threshold` filter.
 
-## Reproducing the reported validation
+## P' definition
 
-The classifier validation reported in the article (leave-one-sample-out and pooled five-fold cross-validation, AUC ≈ 0.96–0.99 across the five training samples, 35,745 segmented objects) can be reproduced from the shipped data:
+The implementation follows the manuscript definition. For positive fabric-axis
+magnitudes `V1`, `V2`, and `V3`:
+
+```text
+f1 = ln(V1), f2 = ln(V2), f3 = ln(V3)
+f_mean = (f1 + f2 + f3) / 3
+P' = exp(sqrt(2 * [(f1-f_mean)^2 + (f2-f_mean)^2 + (f3-f_mean)^2]))
+```
+
+The code uses the mean of the three logarithms, not the logarithm of their
+arithmetic mean. Mean-fabric and bootstrap calculations call the same tested
+definition.
+
+## Input columns
+
+Each XLSX or CSV table must contain:
+
+- `Volume3d (mm^3) `, including the trailing space used by the Avizo export;
+- `EigenVal1`, `EigenVal2`, `EigenVal3`;
+- `EigenVec1X` through `EigenVec3Z`.
+
+`tools/BatchFile.py` prepares app-format tables from raw Avizo Label Analysis
+exports. It removes rows with missing, non-finite, zero, or negative
+eigenvalues and preserves complete sample identifiers. `tools/To_tomofab.py`
+creates TomoFab-compatible tables.
+
+## Pseudo-label ranking evaluation
+
+After reviewing the intended endpoint, run the object-level script with:
 
 ```bash
-python cross_validation.py --data "trained model" --config examples/expert_thresholds.csv
+python cross_validation.py \
+  --data training_data \
+  --config training_data/training_config.csv \
+  --out outputs/S3_validation
 ```
 
-## How to cite
-
-See [`CITATION.cff`](CITATION.cff), or:
-
-```bibtex
-@software{ml_threshold_selection,
-  title   = {ML Threshold Selection: Machine Learning-Driven Adaptive Threshold Selection for XRCT Particle Analysis},
-  author  = {Li, Puqing},
-  year    = {2026},
-    version = {1.2.1},
-  url     = {https://github.com/Puqing-Li/ML_Threshold_Selection},
-  doi     = {10.5281/zenodo.18979422},
-  license = {MIT}
-}
-```
+The script uses the same per-sample voxel-size feature implementation as the
+GUI. Its object-level AUC describes ranking of the configured expert-derived
+labels; it does not independently prove recovery of each historical scalar
+`Vmin`.
 
 ## References
 
-- Brandon, M.T., 1995. Analysis of geologic strain data in strain-magnitude space. Journal of Structural Geology 17, 1375–1385. https://doi.org/10.1016/0191-8141(95)00035-4
-- Chatzaras, V., Lusk, A.D.J., Chapman, T., Aldanmaz, E., Davis, J.R., Tikoff, B., 2021. Transpressional deformation in the lithospheric mantle beneath the North Anatolian Fault Zone. Tectonophysics 815, 229007. https://doi.org/10.1016/j.tecto.2021.229007 (Section 3.2 describes the 6D log-ellipsoid vectorization on which the feature space builds.)
-- Davis, J.R., 2019. geologyGeometry: an R package for structural geology. http://www.joshuadavis.us/software/index.html
-- Efron, B., Tibshirani, R.J., 1993. An Introduction to the Bootstrap. Chapman & Hall/CRC, New York.
-- Jelínek, V., 1981. Characterization of the magnetic fabric of rocks. Tectonophysics 79, T63–T67. https://doi.org/10.1016/0040-1951(81)90110-4
-- Ke, G., Meng, Q., Finley, T., Wang, T., Chen, W., Ma, W., Ye, Q., Liu, T.-Y., 2017. LightGBM: a highly efficient gradient boosting decision tree. Advances in Neural Information Processing Systems 30, 3146–3154.
-- Petri, B., Almqvist, B.S.G., Pistone, M., 2020. 3D rock fabric analysis using micro-tomography: An introduction to the open-source TomoFab MATLAB code. Computers & Geosciences 138, 104444. https://doi.org/10.1016/j.cageo.2020.104444
+- Brandon, M.T., 1995. *Journal of Structural Geology* 17, 1375-1385.
+  https://doi.org/10.1016/0191-8141(95)00032-9
+- Jelinek, V., 1981. *Tectonophysics* 79, T63-T67.
+  https://doi.org/10.1016/0040-1951(81)90110-4
+- Petri, B., Almqvist, B.S.G., Pistone, M., 2020. *Computers & Geosciences*
+  138, 104444. https://doi.org/10.1016/j.cageo.2020.104444
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See `LICENSE`.

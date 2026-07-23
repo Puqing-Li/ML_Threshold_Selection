@@ -1,5 +1,6 @@
 import os
 import re
+import numpy as np
 import pandas as pd
 from datetime import datetime
 from tkinter import Tk, Label, Button, Entry, filedialog, messagebox
@@ -33,11 +34,6 @@ def extract_sample_id(file_path: str) -> str:
     # Trim stray separators
     name = name.strip("_- .")
 
-    # Normalize to "base" id: take substring before the first underscore.
-    # This keeps IDs like "BG02-4B" intact, while mapping "12RH26_41-Y_0000" -> "12RH26".
-    if "_" in name:
-        name = name.split("_", 1)[0].strip("_- .")
-
     return name or "NoSampleFound"
 
 
@@ -58,10 +54,8 @@ def extract_sample_id_from_processed_xlsx(file_path: str) -> str:
             name = name[len(prefix):]
             break
 
-    # Same normalization rule as raw filenames
+    # Preserve meaningful separators in identifiers such as BG02_4B.
     name = name.strip("_- .")
-    if "_" in name:
-        name = name.split("_", 1)[0].strip("_- .")
 
     return name or "NoSampleFound"
 
@@ -101,6 +95,22 @@ def convert_and_clean_csv(input_files, output_directory, log_file):
     return xlsx_files
 
 
+def filter_invalid_eigenvalue_rows(df):
+    """Remove rows that cannot support ellipsoid or logarithmic calculations."""
+    eigen_cols = ['EigenVal1', 'EigenVal2', 'EigenVal3']
+    missing = [column for column in eigen_cols if column not in df.columns]
+    if missing:
+        raise ValueError(f"Missing required eigenvalue columns: {', '.join(missing)}")
+
+    eigenvalues = df[eigen_cols].apply(pd.to_numeric, errors='coerce')
+    valid = np.isfinite(eigenvalues).all(axis=1) & (eigenvalues > 0).all(axis=1)
+    return df.loc[valid].copy(), {
+        'initial_count': int(len(df)),
+        'invalid_eigenvalue_count': int((~valid).sum()),
+        'retained_count': int(valid.sum()),
+    }
+
+
 def process_xlsx_files(input_files, output_directory, log_file, volume_threshold):
     with open(log_file, 'a') as log:
         log.write(f"Processing session started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
@@ -113,15 +123,14 @@ def process_xlsx_files(input_files, output_directory, log_file, volume_threshold
                     continue
                 df = pd.read_excel(file_path)
 
-                initial_count = len(df)
-                df_filtered = df[(df['EigenVal1'] != 0) & (df['EigenVal2'] != 0) & (df['EigenVal3'] != 0)]
-                eigenvalue_filtered_count = len(df_filtered)
-                df_filtered = df_filtered[df_filtered['Anisotropy'] != 1]
-                final_count = len(df_filtered)
+                df_filtered, qc = filter_invalid_eigenvalue_rows(df)
 
-                log.write(f"Initial spinel count: {initial_count}\n")
-                log.write(f"Count after removing zero-eigenvalue spinels: {eigenvalue_filtered_count}\n")
-                log.write(f"Count after removing spinels with Anisotropy = 1: {final_count}\n")
+                log.write(f"Initial object count: {qc['initial_count']}\n")
+                log.write(
+                    "Objects excluded for a missing, non-finite, zero, or negative "
+                    f"EigenVal1-3 value: {qc['invalid_eigenvalue_count']}\n"
+                )
+                log.write(f"Objects retained after numerical-validity QC: {qc['retained_count']}\n")
 
                 # Save the filtered data with all columns
                 total_path = os.path.join(output_directory, f"total{sample_number}.xlsx")
@@ -154,7 +163,6 @@ def process_xlsx_files(input_files, output_directory, log_file, volume_threshold
                     'EigenVec3X', 'EigenVec3Y', 'EigenVec3Z'
                 ]
                 df_extracted = df_sorted.loc[:, [col for col in columns_to_extract if col in df_sorted.columns]]
-                df_extracted.replace(0, 0.00000001, inplace=True)
                 eigens_path = os.path.join(output_directory, f"Eigens{sample_number}.xlsx")
                 df_extracted.to_excel(eigens_path, index=False)
 
@@ -162,7 +170,6 @@ def process_xlsx_files(input_files, output_directory, log_file, volume_threshold
                     volume_eigen_columns = [volume_column_name] + [col for col in columns_to_extract if
                                                                    col in df_sorted.columns]
                     df_volume_eigen = df_sorted.loc[:, volume_eigen_columns]
-                    df_volume_eigen.replace(0, 0.00000001, inplace=True)
                     volume_eigen_path = os.path.join(output_directory, f"VolumeEigen{sample_number}.xlsx")
                     df_volume_eigen.to_excel(volume_eigen_path, index=False)
                     log.write(

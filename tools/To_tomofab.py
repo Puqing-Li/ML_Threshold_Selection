@@ -4,6 +4,35 @@ from tkinter import filedialog
 import os
 
 
+def convert_dataframe(df):
+    eigenvalues = df[['EigenVal1', 'EigenVal2', 'EigenVal3']].astype(float)
+    if eigenvalues.isna().any().any() or (eigenvalues <= 0).any().any():
+        raise ValueError('EigenVal1-3 must be finite and strictly positive')
+    radii = (5.0 * eigenvalues) ** 0.5
+
+    return pd.DataFrame({
+        'Number': df['index'],
+        'Component': 'spinel',
+        'Unique#': df['index'],
+        'Volume (mm^3)': df['Volume3d (mm^3) '],
+        'PEllipsoid X (mm)': df['BaryCenterX (mm) '],
+        'PEllipsoid Y (mm)': df['BaryCenterY (mm) '],
+        'PEllipsoid Z (mm)': df['BaryCenterZ (mm) '],
+        'PEllipsoid Rad1 (mm)': radii['EigenVal1'],
+        'PEllipsoid Rad2 (mm)': radii['EigenVal2'],
+        'PEllipsoid Rad3 (mm)': radii['EigenVal3'],
+        'PEllipsoid X1 (dmls)': df['EigenVec1X'],
+        'PEllipsoid Y1 (dmls)': df['EigenVec1Y'],
+        'PEllipsoid Z1 (dmls)': df['EigenVec1Z'],
+        'PEllipsoid X2 (dmls)': df['EigenVec2X'],
+        'PEllipsoid Y2 (dmls)': df['EigenVec2Y'],
+        'PEllipsoid Z2 (dmls)': df['EigenVec2Z'],
+        'PEllipsoid X3 (dmls)': df['EigenVec3X'],
+        'PEllipsoid Y3 (dmls)': df['EigenVec3Y'],
+        'PEllipsoid Z3 (dmls)': df['EigenVec3Z']
+    })
+
+
 def process_file(filepath, output_dir):
     # Determine the file extension
     file_extension = os.path.splitext(filepath)[1]
@@ -17,28 +46,7 @@ def process_file(filepath, output_dir):
         print(f"Unsupported file format: {file_extension}")
         return
 
-    # Extract the required columns and rename them to the TomoFab schema
-    df_new = pd.DataFrame({
-        'Number': df['index'],
-        'Component': 'spinel',
-        'Unique#': df['index'],  # Assuming Unique# can be the same as index
-        'Volume (mm^3)': df['Volume3d (mm^3) '],
-        'PEllipsoid X (mm)': df['BaryCenterX (mm) '],
-        'PEllipsoid Y (mm)': df['BaryCenterY (mm) '],
-        'PEllipsoid Z (mm)': df['BaryCenterZ (mm) '],
-        'PEllipsoid Rad1 (mm)': df['EigenVal1'],
-        'PEllipsoid Rad2 (mm)': df['EigenVal2'],
-        'PEllipsoid Rad3 (mm)': df['EigenVal3'],
-        'PEllipsoid X1 (dmls)': df['EigenVec1X'],
-        'PEllipsoid Y1 (dmls)': df['EigenVec1Y'],
-        'PEllipsoid Z1 (dmls)': df['EigenVec1Z'],
-        'PEllipsoid X2 (dmls)': df['EigenVec2X'],
-        'PEllipsoid Y2 (dmls)': df['EigenVec2Y'],
-        'PEllipsoid Z2 (dmls)': df['EigenVec2Z'],
-        'PEllipsoid X3 (dmls)': df['EigenVec3X'],
-        'PEllipsoid Y3 (dmls)': df['EigenVec3Y'],
-        'PEllipsoid Z3 (dmls)': df['EigenVec3Z']
-    })
+    df_new = convert_dataframe(df)
 
     # Get the sample id from the filename
     sample_number = os.path.splitext(os.path.basename(filepath))[0]

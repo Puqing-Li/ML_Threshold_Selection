@@ -4,13 +4,13 @@
 Configuration file for ML Threshold Selection system.
 """
 
-# Strict probability threshold for artifact filtering
-# This determines the P>threshold criterion for strict filtering
-# Default: 0.01 (P>0.01 means particles with >1% artifact probability are filtered)
+# Strict tolerance for predicted membership in the expert-defined below-threshold class.
+# The strict cutoff is one voxel above the largest object for which P exceeds
+# this value. P is a pseudo-label class probability, not an independently
+# validated physical-artifact probability.
 STRICT_PROBABILITY_THRESHOLD = 0.01
 
 # Other configurable parameters
-DEFAULT_VOXEL_SIZE_MM = 0.03
 MIN_PARTICLES_FOR_ANALYSIS = 50
 BOOTSTRAP_ITERATIONS = 1000
 

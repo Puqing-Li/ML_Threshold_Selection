@@ -43,12 +43,16 @@ from ml_threshold_selection.mean_fabric_calculator import (
     export_mean_fabric_txt,
     format_mean_fabric_for_display
 )
+from ml_threshold_selection.voxel_config import (
+    FEATURE_SCHEMA_VERSION,
+    parse_voxel_size_mm,
+    require_voxel_sizes,
+)
 
 # Optional project modules
 try:
     from ml_threshold_selection.feature_engineering import FeatureEngineer
     from ml_threshold_selection.threshold_finder import AdaptiveThresholdFinder
-    from ml_threshold_selection.semi_supervised_learner import SemiSupervisedThresholdLearner
     FULL_MODULES_AVAILABLE = True
 except Exception:
     FULL_MODULES_AVAILABLE = False
@@ -92,7 +96,8 @@ class FixedMLGUI:
         self.ellipsoid_feature_engineer = EllipsoidFeatureEngineer()
         self.resolution_aware_engineer = ResolutionAwareFeatureEngineer()
         self.ellipsoid_analysis_results = None
-        self.voxel_sizes = {}
+        self.training_voxel_sizes = {}
+        self.test_voxel_sizes = {}
         # Configuration parameters
         try:
             from config.config import STRICT_PROBABILITY_THRESHOLD
@@ -128,39 +133,42 @@ class FixedMLGUI:
         if not filepaths:
             return
         if self.model is None:
-            self.log("❌ Please train or load a model before running multi-test analysis")
+            self.log("Please train or load a model before running multi-test analysis")
             return
         # Derive sample IDs from filenames (e.g. Quantity_LE01.xlsx -> LE01)
         sample_ids = [derive_test_sample_id(p) for p in filepaths]
         # Configure voxel sizes for all test samples in a single window
         confirmed = self.configure_test_voxel_sizes(sample_ids)
         if not confirmed:
-            self.log("⚠️ Multi-sample test analysis cancelled (voxel sizes not confirmed)")
+            self.log("Multi-sample test analysis cancelled (voxel sizes not confirmed)")
             return
         self.log("")
-        self.log("════════════════════════════════════════════════════════════")
-        self.log(f"🔄 Starting multi-sample test analysis for {len(filepaths)} files")
-        self.log("════════════════════════════════════════════════════════════")
+        self.log("------------------------------------------------------------")
+        self.log(f"Starting multi-sample test analysis for {len(filepaths)} files")
+        self.log("------------------------------------------------------------")
         for filepath in filepaths:
             try:
                 df = io_load_file(self, filepath)
                 if df is None:
                     continue
+                if not io_validate_training_data(self, df):
+                    self.log(f"Skipping invalid test table: {filepath}")
+                    continue
                 self.test_data = df
                 self.test_file_path = filepath
                 sample_id = derive_test_sample_id(filepath)
-                if sample_id not in self.voxel_sizes:
-                    self.log(f"⚠️ Skipping sample {sample_id}: voxel size not set")
+                if sample_id not in self.test_voxel_sizes:
+                    self.log(f"Skipping sample {sample_id}: voxel size not set")
                     continue
                 self.log("")
                 self.log(f"==== Sample {sample_id} ====")
                 self.run_full_pipeline_for_current_test_sample()
             except Exception as e:
-                self.log(f"❌ Failed to process file {filepath}: {e}")
+                self.log(f"Failed to process file {filepath}: {e}")
                 import traceback
                 self.log(f"Traceback: {traceback.format_exc()}")
         self.log("")
-        self.log("✅ Multi-sample test analysis complete.")
+        self.log("Multi-sample test analysis complete.")
         self.log("Check outputs directory for per-sample results.")
 
     def input_voxel_sizes(self):
@@ -169,12 +177,12 @@ class FixedMLGUI:
     # Labeling
     def generate_labels_from_thresholds(self):
         if self.training_data is None:
-            self.log("❌ Please load training data first")
+            self.log("Please load training data first")
             return
         self.training_data = gen_labels_from_thresholds(
             training_data=self.training_data,
             expert_thresholds=self.expert_thresholds,
-            voxel_sizes=self.voxel_sizes,
+            voxel_sizes=self.training_voxel_sizes,
             sample_list=self.sample_list,
             log=self.log,
         )
@@ -182,25 +190,43 @@ class FixedMLGUI:
     # Training
     def train_model(self):
         if self.training_data is None:
-            self.log("❌ Please load training data first")
+            self.log("Please load training data first")
             return
         if not self.expert_thresholds:
-            self.log("❌ Please enter expert thresholds first")
+            self.log("Please enter expert thresholds first")
             return
         try:
-            self.log("🔄 Training model...")
+            training_sample_ids = (
+                self.training_data['SampleID'].astype(str).unique().tolist()
+            )
+            training_voxel_sizes = require_voxel_sizes(
+                self.training_voxel_sizes, training_sample_ids
+            )
+            missing_thresholds = [
+                sample_id
+                for sample_id in training_sample_ids
+                if sample_id not in self.expert_thresholds
+            ]
+            if missing_thresholds:
+                raise ValueError(
+                    "Missing expert thresholds (mm^3) for samples: "
+                    + ", ".join(missing_thresholds)
+                )
+            self.training_voxel_sizes = training_voxel_sizes
+            self.log("Training model...")
             self.root.update()
             self.generate_labels_from_thresholds()
+            self.resolution_aware_engineer = ResolutionAwareFeatureEngineer()
             model, features, training_results = train_model_pipeline(
                 training_data=self.training_data,
-                voxel_sizes=self.voxel_sizes,
+                voxel_sizes=self.training_voxel_sizes,
                 resolution_aware_engineer=self.resolution_aware_engineer,
                 lightgbm_available=LIGHTGBM_AVAILABLE,
             )
             self.model = model
             self.features = features
             self.training_results = training_results
-            self.log("✅ Training complete!")
+            self.log("Training complete!")
             self.log(f"   - Num features: {len(self.features.columns)}")
             self.log(f"   - Num samples: {len(self.training_results['X'])}")
             self.log(f"   - Train AUC: {self.training_results['train_auc']:.3f}")
@@ -212,12 +238,12 @@ class FixedMLGUI:
             # Model" target the same folder regardless of the working directory
             # the app was launched from (IDE, Finder, python /path/main.py, ...).
             from pathlib import Path as _Path
-            _models_dir = str(_Path(__file__).resolve().parents[2] / 'trained model')
+            _models_dir = str(_Path(__file__).resolve().parents[2] / 'models')
             persist_auto_save(
                 model=self.model,
                 training_data=self.training_data,
                 expert_thresholds=self.expert_thresholds,
-                voxel_sizes=self.voxel_sizes,
+                voxel_sizes=self.training_voxel_sizes,
                 training_files=self.training_files,
                 features=self.features,
                 training_results=self.training_results,
@@ -225,29 +251,33 @@ class FixedMLGUI:
                 resolution_aware_engineer=self.resolution_aware_engineer,
                 outputs_dir=_models_dir
             )
-            self.log("💾 Model automatically saved to 'trained model' folder for next session")
+            self.log("Model automatically saved to the 'models' folder")
         except Exception as e:
-            self.log(f"❌ Training failed: {e}")
+            self.log(f"Training failed: {e}")
             import traceback
             self.log(f"Traceback: {traceback.format_exc()}")
 
     # Prediction
     def predict_analysis(self):
         if self.test_data is None:
-            self.log("❌ Please load test data first")
+            self.log("Please load test data first")
             return
         if self.model is None:
-            self.log("❌ Please train the model first")
+            self.log("Please train the model first")
             return
         try:
-            self.log("🔄 Starting prediction analysis...")
-            if not self.voxel_sizes:
-                self.log("❌ Please input voxel sizes first (mm)")
+            self.log("Starting prediction analysis...")
+            if not self.test_voxel_sizes:
+                self.log("Please input the measured test voxel size first (mm/voxel)")
                 return
-            first_sample = self.sample_list[0] if self.sample_list else list(self.voxel_sizes.keys())[0]
-            voxel_mm = float(self.voxel_sizes[first_sample])
+            if not hasattr(self, 'test_file_path') or not self.test_file_path:
+                raise ValueError('Test sample ID is unavailable')
+            sample_id = derive_test_sample_id(self.test_file_path)
+            if sample_id not in self.test_voxel_sizes:
+                raise ValueError(f'Voxel size is not configured for test sample {sample_id}')
+            voxel_mm = parse_voxel_size_mm(self.test_voxel_sizes[sample_id], sample_id)
             test_features = self.resolution_aware_engineer.extract(self.test_data, voxel_size_mm=voxel_mm, fit_scaler=False)
-            self.log(f"🔧 Resolution-aware prediction features: {test_features.shape[1]}")
+            self.log(f"Resolution-aware prediction features: {test_features.shape[1]}")
             if hasattr(self.model, 'predict_proba'):
                 probabilities = self.model.predict_proba(test_features.values)[:, 1]
             else:
@@ -258,7 +288,7 @@ class FixedMLGUI:
             inflection_threshold, noise_removal_threshold = compute_dual_thresholds(
                 voxels_cont, probabilities, self.strict_probability_threshold
             )
-            self.log("✅ Prediction analysis complete!")
+            self.log("Prediction analysis complete!")
             self.log(f"   - Total particles: {len(volumes)}")
             if inflection_threshold is not None:
                 self.log(f"   - Loose threshold (Inflection): {int(np.ceil(inflection_threshold))} vox | {(int(np.ceil(inflection_threshold))*voxel_vol):.2e} mm³")
@@ -269,7 +299,7 @@ class FixedMLGUI:
             self.strict_threshold_vox = int(np.ceil(noise_removal_threshold)) if noise_removal_threshold is not None else None
             self.test_voxel_size_mm = voxel_mm
         except Exception as e:
-            self.log(f"❌ Prediction analysis failed: {e}")
+            self.log(f"Prediction analysis failed: {e}")
             import traceback
             self.log(f"Traceback: {traceback.format_exc()}")
             self.loose_threshold_vox = None
@@ -278,15 +308,15 @@ class FixedMLGUI:
 
     def ensure_voxel_size_for_sample(self, sample_id: str) -> Optional[float]:
         """Ensure voxel size exists for the given sample; prompt user if missing."""
-        if sample_id in self.voxel_sizes:
-            voxel_size = float(self.voxel_sizes[sample_id])
-            self.log(f"ℹ️ Using existing voxel size for {sample_id}: {voxel_size} mm")
+        if sample_id in self.test_voxel_sizes:
+            voxel_size = parse_voxel_size_mm(self.test_voxel_sizes[sample_id], sample_id)
+            self.log(f"Using existing voxel size for {sample_id}: {voxel_size} mm")
             return voxel_size
 
         # Prompt user for voxel size (blocking dialog)
-        self.log("📏 Please input voxel size for test data (mm/voxel):")
-        self.log("   Example: 0.03 means each voxel edge length is 0.03mm")
-        self.log("   If unknown, you can use 0.03 as default value")
+        self.log("Please input voxel size for test data (mm/voxel):")
+        self.log("   Enter the value recorded in the scan metadata")
+        self.log("   The measured value is required; no default will be used")
 
         voxel_window = tk.Toplevel(self.root)
         voxel_window.title(f"Input Voxel Size - {sample_id}")
@@ -306,22 +336,20 @@ class FixedMLGUI:
         ).pack(pady=5)
         voxel_entry = tk.Entry(voxel_window, font=("Arial", 10), width=20)
         voxel_entry.pack(pady=5)
-        voxel_entry.insert(0, "0.03")
 
         result = {"value": None}
 
         def save_voxel_size():
             try:
-                voxel_size = float(voxel_entry.get())
-                if voxel_size <= 0:
-                    messagebox.showerror("Error", "Voxel size must be greater than 0")
-                    return
-                self.voxel_sizes[sample_id] = voxel_size
+                voxel_size = parse_voxel_size_mm(voxel_entry.get().strip(), sample_id)
+                self.test_voxel_sizes[sample_id] = voxel_size
                 result["value"] = voxel_size
-                self.log(f"✅ Test data voxel size: {sample_id} = {voxel_size} mm")
+                self.log(f"Test data voxel size: {sample_id} = {voxel_size} mm")
                 voxel_window.destroy()
-            except ValueError:
-                messagebox.showerror("Error", "Please enter a valid number")
+            except ValueError as exc:
+                messagebox.showerror(
+                    "Invalid voxel size", str(exc), parent=voxel_window
+                )
 
         tk.Button(
             voxel_window,
@@ -392,8 +420,8 @@ class FixedMLGUI:
 
         # Populate initial rows
         for sid in unique_ids:
-            existing_voxel = self.voxel_sizes.get(sid, 0.03)
-            tree.insert("", "end", values=(sid, "", existing_voxel))
+            self.test_voxel_sizes.pop(sid, None)
+            tree.insert("", "end", values=(sid, "", ""))
 
         def edit_cell(event):
             item = tree.identify_row(event.y)
@@ -441,21 +469,13 @@ class FixedMLGUI:
                             parent=dialog,
                         )
                         return
-                    voxel_val = float(voxel_str)
-                    if voxel_val <= 0:
-                        messagebox.showerror(
-                            "Invalid voxel size",
-                            f"Voxel size for sample '{sid}' must be greater than 0.",
-                            parent=dialog,
-                        )
-                        return
+                    voxel_val = parse_voxel_size_mm(voxel_str, sid)
                     new_voxels[sid] = voxel_val
-                # All valid, commit to self.voxel_sizes
-                self.voxel_sizes.update(new_voxels)
-                self.log(f"✅ Saved voxel sizes for {len(new_voxels)} test samples")
+                self.test_voxel_sizes.update(new_voxels)
+                self.log(f"Saved voxel sizes for {len(new_voxels)} test samples")
                 for sid in unique_ids:
-                    if sid in self.voxel_sizes:
-                        self.log(f"   - {sid}: {self.voxel_sizes[sid]:.4f} mm")
+                    if sid in self.test_voxel_sizes:
+                        self.log(f"   - {sid}: {self.test_voxel_sizes[sid]:.6g} mm/voxel")
                 result["confirmed"] = True
                 dialog.destroy()
             except ValueError as e:
@@ -489,9 +509,9 @@ class FixedMLGUI:
                     )
                 df = pd.DataFrame(rows)
                 df.to_excel(path, index=False)
-                self.log(f"✅ Test voxel size template saved to: {path}")
+                self.log(f"Test voxel size template saved to: {path}")
             except Exception as e:
-                self.log(f"❌ Failed to save voxel sizes XLSX: {e}")
+                self.log(f"Failed to save voxel sizes XLSX: {e}")
                 import traceback
                 self.log(f"Traceback: {traceback.format_exc()}")
                 messagebox.showerror(
@@ -513,7 +533,7 @@ class FixedMLGUI:
                 required_cols = {"SampleID", "Volcano", "VoxelSize_mm"}
                 if not required_cols.issubset(set(df.columns)):
                     self.log(
-                        f"❌ Invalid voxel size XLSX. Required columns: {sorted(list(required_cols))}"
+                        f"Invalid voxel size XLSX. Required columns: {sorted(list(required_cols))}"
                     )
                     messagebox.showerror(
                         "Invalid format",
@@ -538,14 +558,14 @@ class FixedMLGUI:
                     else:
                         missing.append(sid)
                 self.log(
-                    f"✅ Loaded voxel sizes from XLSX for {updated} test samples (file: {os.path.basename(path)})"
+                    f"Loaded voxel sizes from XLSX for {updated} test samples (file: {os.path.basename(path)})"
                 )
                 if missing:
                     self.log(
-                        f"⚠️ {len(missing)} samples not found in XLSX: {missing}"
+                        f"{len(missing)} samples not found in XLSX: {missing}"
                     )
             except Exception as e:
-                self.log(f"❌ Failed to load voxel sizes XLSX: {e}")
+                self.log(f"Failed to load voxel sizes XLSX: {e}")
                 import traceback
                 self.log(f"Traceback: {traceback.format_exc()}")
                 messagebox.showerror(
@@ -576,7 +596,7 @@ class FixedMLGUI:
     def run_full_pipeline_for_current_test_sample(self):
         """Run prediction, mean fabric, and export for the current test_data."""
         if self.test_data is None:
-            self.log("❌ No test data loaded for current sample")
+            self.log("No test data loaded for current sample")
             return
         try:
             self.predict_analysis()
@@ -586,12 +606,12 @@ class FixedMLGUI:
                 or self.loose_threshold_vox is None
                 or self.strict_threshold_vox is None
             ):
-                self.log("⚠️ Thresholds not available; skipping mean fabric and export")
+                self.log("Thresholds not available; skipping mean fabric and export")
                 return
             self.calculate_mean_fabric()
             self.export_results()
         except Exception as e:
-            self.log(f"❌ Full pipeline failed for current sample: {e}")
+            self.log(f"Full pipeline failed for current sample: {e}")
             import traceback
             self.log(f"Traceback: {traceback.format_exc()}")
 
@@ -606,7 +626,7 @@ class FixedMLGUI:
         try:
             ui_save_chart(fig, base_name, format_type, self.log)
         except Exception as e:
-            self.log(f"❌ Chart save failed: {e}")
+            self.log(f"Chart save failed: {e}")
 
     # Help / User Guide
     def open_user_guide(self):
@@ -615,19 +635,19 @@ class FixedMLGUI:
             from pathlib import Path
             root_dir = Path(__file__).resolve().parents[2]
             candidates = [
-                root_dir / 'docs' / 'USER_GUIDE_MODEL_AND_FEATURES_EN.md',
                 root_dir / 'docs' / 'user_guide.md',
+                root_dir / 'docs' / 'USER_GUIDE_MODEL_AND_FEATURES_EN.md',
             ]
             guide = next((p for p in candidates if p.exists()), None)
             if guide:
                 webbrowser.open(guide.as_uri())
-                self.log(f"📖 Opened User Guide: {guide.name}")
+                self.log(f"Opened User Guide: {guide.name}")
             else:
-                msg = "⚠️ User Guide not found under docs/. Please add USER_GUIDE_MODEL_AND_FEATURES_EN.md or user_guide.md."
+                msg = "User Guide not found under docs/. Please add USER_GUIDE_MODEL_AND_FEATURES_EN.md or user_guide.md."
                 self.log(msg)
                 messagebox.showinfo("User Guide", msg)
         except Exception as e:
-            self.log(f"❌ Failed to open User Guide: {e}")
+            self.log(f"Failed to open User Guide: {e}")
 
     def configure_strict_threshold(self):
         """Configure the strict probability threshold (P>threshold)"""
@@ -666,12 +686,12 @@ class FixedMLGUI:
                 new_threshold = float(threshold_var.get())
                 if 0.0 <= new_threshold <= 1.0:
                     self.strict_probability_threshold = new_threshold
-                    self.log(f"✅ Strict probability threshold updated to: {new_threshold}")
+                    self.log(f"Strict probability threshold updated to: {new_threshold}")
                     dialog.destroy()
                 else:
-                    self.log("❌ Threshold must be between 0.0 and 1.0")
+                    self.log("Threshold must be between 0.0 and 1.0")
             except ValueError:
-                self.log("❌ Invalid threshold value. Please enter a number between 0.0 and 1.0")
+                self.log("Invalid threshold value. Please enter a number between 0.0 and 1.0")
 
         ttk.Button(button_frame, text="Save", command=save_threshold, width=15).pack(side=tk.LEFT, padx=(0, 10))
         ttk.Button(button_frame, text="Cancel", command=dialog.destroy, width=15).pack(side=tk.LEFT, padx=(0, 10))
@@ -691,23 +711,28 @@ class FixedMLGUI:
             df = pd.read_csv(path)
             required = {'SampleID', 'ExpertThreshold_mm3', 'VoxelSize_mm'}
             if not required.issubset(set(df.columns)):
-                self.log(f"❌ Invalid config. Required columns: {sorted(list(required))}")
+                self.log(f"Invalid config. Required columns: {sorted(list(required))}")
                 return
             # Update in-memory config
             self.expert_thresholds = {str(r['SampleID']): float(r['ExpertThreshold_mm3']) for _, r in df.iterrows()}
-            self.voxel_sizes = {str(r['SampleID']): float(r['VoxelSize_mm']) for _, r in df.iterrows()}
-            self.sample_list = sorted(list(self.voxel_sizes.keys()))
-            self.log(f"✅ Loaded thresholds & voxels for {len(self.sample_list)} samples")
+            self.training_voxel_sizes = {
+                str(r['SampleID']): parse_voxel_size_mm(
+                    r['VoxelSize_mm'], str(r['SampleID'])
+                )
+                for _, r in df.iterrows()
+            }
+            self.sample_list = sorted(list(self.training_voxel_sizes.keys()))
+            self.log(f"Loaded thresholds & voxels for {len(self.sample_list)} samples")
             for sid in self.sample_list:
-                self.log(f"   - {sid}: threshold={self.expert_thresholds.get(sid, 'NA'):.2e} mm³, voxel={self.voxel_sizes.get(sid, 'NA'):.4f} mm")
+                self.log(f"   - {sid}: threshold={self.expert_thresholds.get(sid, 'NA'):.2e} mm³, voxel={self.training_voxel_sizes.get(sid, 'NA'):.4f} mm")
         except Exception as e:
-            self.log(f"❌ Failed to load thresholds config: {e}")
+            self.log(f"Failed to load thresholds config: {e}")
 
     # Fabric boxplots
     def generate_fabric_boxplots(self):
         try:
             if self.test_data is None:
-                self.log("❌ Please load test data first")
+                self.log("Please load test data first")
                 return
             required_cols = [
                 'EigenVal1', 'EigenVal2', 'EigenVal3',
@@ -717,19 +742,17 @@ class FixedMLGUI:
             ]
             for c in required_cols:
                 if c not in self.test_data.columns:
-                    self.log(f"❌ Missing required column for fabric analysis: {c}")
+                    self.log(f"Missing required column for fabric analysis: {c}")
                     return
             if not hasattr(self, 'loose_threshold_vox') or not hasattr(self, 'strict_threshold_vox'):
-                self.log("❌ Please perform prediction analysis first to get thresholds")
+                self.log("Please perform prediction analysis first to get thresholds")
                 return
             if self.loose_threshold_vox is None or self.strict_threshold_vox is None:
-                self.log("❌ Thresholds are not ready. Run prediction analysis again.")
+                self.log("Thresholds are not ready. Run prediction analysis again.")
                 return
-            if not self.voxel_sizes:
-                self.log("❌ Please input voxel sizes first (mm)")
-                return
-            first_sample = self.sample_list[0] if self.sample_list else list(self.voxel_sizes.keys())[0]
-            voxel_mm = float(self.voxel_sizes[first_sample])
+            if not hasattr(self, 'test_voxel_size_mm') or self.test_voxel_size_mm is None:
+                raise ValueError('Test voxel size is unavailable; run prediction analysis first')
+            voxel_mm = float(self.test_voxel_size_mm)
             logger = UILogger(self.log)
             run_fabric_boxplots(
                 df=self.test_data,
@@ -742,32 +765,30 @@ class FixedMLGUI:
                 min_particles=50,
             )
         except Exception as e:
-            self.log(f"❌ Fabric boxplots failed: {e}")
+            self.log(f"Fabric boxplots failed: {e}")
             import traceback
             self.log(f"Detailed error: {traceback.format_exc()}")
 
     # Export
     def export_results(self):
         if self.test_data is None or self.probabilities is None:
-            self.log("❌ Please perform prediction analysis first")
+            self.log("Please perform prediction analysis first")
             return
         try:
             if not hasattr(self, 'loose_threshold_vox') or not hasattr(self, 'strict_threshold_vox'):
-                self.log("❌ Please perform prediction analysis to get thresholds first")
+                self.log("Please perform prediction analysis to get thresholds first")
                 return
             if self.loose_threshold_vox is None or self.strict_threshold_vox is None:
-                self.log("❌ Thresholds not calculated properly. Please run prediction analysis again.")
+                self.log("Thresholds not calculated properly. Please run prediction analysis again.")
                 return
             if not hasattr(self, 'test_voxel_size_mm') or self.test_voxel_size_mm is None:
-                self.log("❌ Test voxel size not available")
+                self.log("Test voxel size not available")
                 return
             voxel_size_mm = self.test_voxel_size_mm
             # Derive sample ID for naming outputs
-            sample_id = "TestSample"
-            if hasattr(self, 'test_file_path') and self.test_file_path:
-                sample_id = derive_test_sample_id(self.test_file_path)
-            elif self.sample_list:
-                sample_id = self.sample_list[0]
+            if not hasattr(self, 'test_file_path') or not self.test_file_path:
+                raise ValueError('Test sample ID is unavailable')
+            sample_id = derive_test_sample_id(self.test_file_path)
             loose_file, strict_file = export_filtered_results(
                 results_df=self.test_data,
                 probabilities=self.probabilities,
@@ -796,12 +817,12 @@ class FixedMLGUI:
                 strict_kept=strict_kept,
                 strict_probability_threshold=self.strict_probability_threshold,
             )
-            self.log(f"✅ Loose threshold results exported to: {loose_file}")
-            self.log(f"✅ Strict threshold results exported to: {strict_file}")
-            self.log(f"✅ Threshold report exported to: {report_filename}")
-            self.log("📊 Export complete: 2 XLSX files + 1 TXT report generated")
+            self.log(f"Loose threshold results exported to: {loose_file}")
+            self.log(f"Strict threshold results exported to: {strict_file}")
+            self.log(f"Threshold report exported to: {report_filename}")
+            self.log("Export complete: 2 XLSX files + 1 TXT report generated")
         except Exception as e:
-            self.log(f"❌ Export results failed: {e}")
+            self.log(f"Export results failed: {e}")
             import traceback
             self.log(f"Detailed error: {traceback.format_exc()}")
 
@@ -821,20 +842,20 @@ class FixedMLGUI:
     def calculate_mean_fabric(self):
         """Calculate mean fabric tensor for both loose and strict thresholds"""
         if self.test_data is None:
-            self.log("❌ Please load test data first")
+            self.log("Please load test data first")
             return
         if not hasattr(self, 'loose_threshold_vox') or not hasattr(self, 'strict_threshold_vox'):
-            self.log("❌ Please perform prediction analysis first to get thresholds")
+            self.log("Please perform prediction analysis first to get thresholds")
             return
         if self.loose_threshold_vox is None or self.strict_threshold_vox is None:
-            self.log("❌ Thresholds not calculated. Please run prediction analysis first.")
+            self.log("Thresholds not calculated. Please run prediction analysis first.")
             return
         if not hasattr(self, 'test_voxel_size_mm') or self.test_voxel_size_mm is None:
-            self.log("❌ Test voxel size not available")
+            self.log("Test voxel size not available")
             return
         
         try:
-            self.log("🔄 Calculating mean fabric tensors...")
+            self.log("Calculating mean fabric tensors...")
             voxel_size_mm = self.test_voxel_size_mm
             voxel_vol = voxel_size_mm ** 3
             
@@ -842,12 +863,9 @@ class FixedMLGUI:
             loose_threshold_mm3 = self.loose_threshold_vox * voxel_vol
             strict_threshold_mm3 = self.strict_threshold_vox * voxel_vol
             
-            # Get sample ID (from test data filename or first sample)
-            sample_id = "TestSample"
-            if hasattr(self, 'test_file_path') and self.test_file_path:
-                sample_id = derive_test_sample_id(self.test_file_path)
-            elif self.sample_list:
-                sample_id = self.sample_list[0]
+            if not hasattr(self, 'test_file_path') or not self.test_file_path:
+                raise ValueError('Test sample ID is unavailable')
+            sample_id = derive_test_sample_id(self.test_file_path)
             
             # Calculate for Loose threshold
             self.log(f"   Calculating for Loose threshold ({loose_threshold_mm3:.6e} mm³)...")
@@ -856,7 +874,7 @@ class FixedMLGUI:
             )
             
             if loose_mean is None:
-                self.log(f"   ⚠️ Loose threshold: Insufficient particles ({loose_n})")
+                self.log(f"   Loose threshold: Insufficient particles ({loose_n})")
             else:
                 loose_file = export_mean_fabric_txt(
                     sample_id=sample_id,
@@ -870,7 +888,7 @@ class FixedMLGUI:
                     n_particles=loose_n,
                     output_dir='outputs'
                 )
-                self.log(f"   ✅ Loose threshold mean fabric saved: {loose_file}")
+                self.log(f"   Loose threshold mean fabric saved: {loose_file}")
                 self.log(f"      - Particles: {loose_n}, T: {loose_T:.6f}, P': {loose_P:.6f}")
                 
                 # Display results in GUI
@@ -899,7 +917,7 @@ class FixedMLGUI:
             )
             
             if strict_mean is None:
-                self.log(f"   ⚠️ Strict threshold: Insufficient particles ({strict_n})")
+                self.log(f"   Strict threshold: Insufficient particles ({strict_n})")
             else:
                 strict_file = export_mean_fabric_txt(
                     sample_id=sample_id,
@@ -913,7 +931,7 @@ class FixedMLGUI:
                     n_particles=strict_n,
                     output_dir='outputs'
                 )
-                self.log(f"   ✅ Strict threshold mean fabric saved: {strict_file}")
+                self.log(f"   Strict threshold mean fabric saved: {strict_file}")
                 self.log(f"      - Particles: {strict_n}, T: {strict_T:.6f}, P': {strict_P:.6f}")
                 
                 # Display results in GUI
@@ -935,13 +953,13 @@ class FixedMLGUI:
                 self.log(strict_display_text)
                 self.log("")
             
-            self.log("✅ Mean fabric calculation complete!")
-            self.log("📄 Two TXT files generated with mean fabric tensors and eigenvectors")
-            self.log("   - Use Eigen1 (column 0) and Eigen2 (column 1) for foliation plane in Avizo")
-            self.log("   - Use Eigen1 (column 0) and Eigen3 (column 2) for kinematic plane in Avizo")
+            self.log("Mean fabric calculation complete!")
+            self.log("Two TXT files generated with mean fabric tensors and eigenvectors")
+            self.log("   - Columns 0-2 are geometric principal axes in the XRCT scan frame")
+            self.log("   - Assign foliation, lineation, or kinematic meaning only after independent orientation and microstructural interpretation")
             
         except Exception as e:
-            self.log(f"❌ Mean fabric calculation failed: {e}")
+            self.log(f"Mean fabric calculation failed: {e}")
             import traceback
             self.log(f"Detailed error: {traceback.format_exc()}")
 
@@ -949,29 +967,47 @@ class FixedMLGUI:
     def load_last_time_model(self):
         try:
             from pathlib import Path as _Path
-            _models_dir = str(_Path(__file__).resolve().parents[2] / 'trained model')
+            _models_dir = str(_Path(__file__).resolve().parents[2] / 'models')
             model_data = persist_load_last(_models_dir)
+            schema_version = model_data.get('feature_schema_version')
+            if schema_version != FEATURE_SCHEMA_VERSION:
+                raise ValueError(
+                    "The bundled model uses the legacy global-0.03 feature schema. "
+                    "It cannot be used silently with the resolution-aware v2 code. "
+                    "Load the training tables, enter each sample's measured voxel size, "
+                    "and retrain the model."
+                )
+            if model_data.get('model') is None:
+                raise ValueError('Saved model bundle does not contain a usable classifier')
+            saved_engineer = model_data.get('resolution_aware_engineer')
+            if saved_engineer is None or not getattr(saved_engineer, 'is_fitted', False):
+                raise ValueError('Saved model bundle does not contain a fitted v2 feature scaler')
             self.model = model_data['model']
             self.training_data = model_data['training_data']
             self.expert_thresholds = model_data['expert_thresholds']
-            self.voxel_sizes = model_data['voxel_sizes']
+            if 'SampleID' not in self.training_data.columns:
+                raise ValueError('Saved training data has no SampleID column')
+            training_sample_ids = (
+                self.training_data['SampleID'].astype(str).unique().tolist()
+            )
+            self.training_voxel_sizes = require_voxel_sizes(
+                model_data['voxel_sizes'], training_sample_ids
+            )
+            self.test_voxel_sizes = {}
+            self.sample_list = sorted(training_sample_ids)
             self.training_files = model_data['training_files']
             self.features = model_data.get('features', None)
             self.training_results = model_data.get('training_results', None)
             self.ellipsoid_analysis_results = model_data.get('ellipsoid_analysis_results', None) or model_data.get('joshua_analysis_results', None)
-            if 'resolution_aware_engineer' in model_data:
-                self.resolution_aware_engineer = model_data['resolution_aware_engineer']
-                self.log("   - Resolution-aware engineer with fitted scaler restored")
-            else:
-                self.resolution_aware_engineer = ResolutionAwareFeatureEngineer()
-                self.log("   - New resolution-aware engineer created (scaler not fitted)")
-            self.log("✅ Last time model loaded successfully!")
+            self.resolution_aware_engineer = saved_engineer
+            self.log("   - Resolution-aware engineer with fitted scaler restored")
+            self.log("Last time model loaded successfully!")
             self.log(f"   - Training data: {len(self.training_data)} particles")
             self.log(f"   - Expert thresholds: {len(self.expert_thresholds)} samples")
-            self.log(f"   - Voxel sizes: {len(self.voxel_sizes)} samples")
+            self.log(f"   - Training voxel sizes: {len(self.training_voxel_sizes)} samples")
             self.log(f"   - Training files: {len(self.training_files)} files")
             self.log("   - Model ready for prediction and visualization")
-            self.log("👉 Next step: Load Test Data (Step 6) and run Predict Analysis (Step 7); then Mean Fabric or Export/Reports.")
+            self.log("Next step: Load Test Data (Step 6) and run Predict Analysis (Step 7); then Mean Fabric or Export/Reports.")
             try:
                 msg_win = tk.Toplevel(self.root)
                 msg_win.title("Next Step")
@@ -992,7 +1028,7 @@ class FixedMLGUI:
             except Exception:
                 pass
         except Exception as e:
-            self.log(f"❌ Load last time model failed: {e}")
+            self.log(f"Load last time model failed: {e}")
             import traceback
             self.log(f"Detailed error: {traceback.format_exc()}")
 

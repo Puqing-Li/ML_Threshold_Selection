@@ -14,8 +14,9 @@ Two on-disk formats are supported:
   across library major versions (e.g. a model saved with pandas 3 / NumPy 2
   cannot be read by an older environment).
 
-``load_last`` prefers the portable bundle when present and transparently falls
-back to the pickle, so existing installations keep working unchanged.
+``load_last`` uses the portable bundle whenever its manifest is present. It
+falls back to the pickle only when no portable manifest exists; a corrupt or
+incompatible portable bundle is reported instead of being silently bypassed.
 """
 
 from __future__ import annotations
@@ -26,6 +27,8 @@ import pickle
 
 import numpy as np
 import pandas as pd
+
+from ml_threshold_selection.voxel_config import FEATURE_SCHEMA_VERSION
 
 PORTABLE_DIRNAME = 'last_time_model_portable'
 PICKLE_FILENAME = 'last_time_model.pkl'
@@ -54,6 +57,18 @@ def _to_num(x):
 
 def _sanitize(name: str) -> str:
     return ''.join(c if c.isalnum() else '_' for c in str(name))[:60]
+
+
+def _contains_unsupported(desc) -> bool:
+    if not isinstance(desc, dict):
+        return False
+    if desc.get('kind') == 'unsupported':
+        return True
+    if desc.get('kind') == 'dict':
+        return any(_contains_unsupported(value) for value in desc['items'].values())
+    if desc.get('kind') == 'list':
+        return any(_contains_unsupported(value) for value in desc['items'])
+    return False
 
 
 # --------------------------------------------------------------------------- #
@@ -176,6 +191,14 @@ def save_portable(model_data: dict, outputs_dir: str = 'outputs') -> str:
     manifest = {'format_version': 1, 'keys': {}}
     for key, value in model_data.items():
         manifest['keys'][key] = _save_node(value, bundle_dir, _sanitize(key))
+    unsupported = [
+        key for key, desc in manifest['keys'].items()
+        if _contains_unsupported(desc)
+    ]
+    if unsupported:
+        raise TypeError(
+            'Portable model contains unsupported values in: ' + ', '.join(unsupported)
+        )
     with open(os.path.join(bundle_dir, 'manifest.json'), 'w', encoding='utf-8') as f:
         json.dump(manifest, f, ensure_ascii=False, indent=2)
     return bundle_dir
@@ -188,6 +211,14 @@ def load_portable(outputs_dir_or_bundle: str) -> dict:
         bundle_dir = os.path.join(outputs_dir_or_bundle, PORTABLE_DIRNAME)
     with open(os.path.join(bundle_dir, 'manifest.json'), 'r', encoding='utf-8') as f:
         manifest = json.load(f)
+    unsupported = [
+        key for key, desc in manifest.get('keys', {}).items()
+        if _contains_unsupported(desc)
+    ]
+    if unsupported:
+        raise TypeError(
+            'Portable model contains unsupported values in: ' + ', '.join(unsupported)
+        )
     return {key: _load_node(desc, bundle_dir) for key, desc in manifest['keys'].items()}
 
 
@@ -197,6 +228,7 @@ def load_portable(outputs_dir_or_bundle: str) -> dict:
 def auto_save(model, training_data, expert_thresholds, voxel_sizes, training_files, features, training_results, ellipsoid_analysis_results, resolution_aware_engineer, outputs_dir: str = 'outputs'):
     os.makedirs(outputs_dir, exist_ok=True)
     model_data = {
+        'feature_schema_version': FEATURE_SCHEMA_VERSION,
         'model': model,
         'training_data': training_data,
         'expert_thresholds': expert_thresholds,
@@ -210,21 +242,14 @@ def auto_save(model, training_data, expert_thresholds, voxel_sizes, training_fil
     # Legacy pickle (fast same-machine round trip).
     with open(os.path.join(outputs_dir, PICKLE_FILENAME), 'wb') as f:
         pickle.dump(model_data, f)
-    # Portable bundle (cross-version). Never let a bundle hiccup break training.
-    try:
-        save_portable(model_data, outputs_dir)
-    except Exception:
-        pass
+    save_portable(model_data, outputs_dir)
 
 
 def load_last(outputs_dir: str = 'outputs'):
     # Prefer the version-portable bundle when it exists.
     bundle_dir = os.path.join(outputs_dir, PORTABLE_DIRNAME)
     if os.path.exists(os.path.join(bundle_dir, 'manifest.json')):
-        try:
-            return load_portable(bundle_dir)
-        except Exception:
-            pass  # fall back to the pickle below
+        return load_portable(bundle_dir)
     model_file = os.path.join(outputs_dir, PICKLE_FILENAME)
     if not os.path.exists(model_file):
         raise FileNotFoundError('No last_time_model found (portable bundle or pickle)')

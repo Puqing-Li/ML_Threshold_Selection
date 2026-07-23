@@ -7,7 +7,10 @@ Fabric analysis bootstrap helpers: log-Euclidean averaging of ellipsoid tensors
 from __future__ import annotations
 
 import numpy as np
-from typing import Tuple
+from typing import Optional, Tuple
+
+
+REFERENCE_LENGTH_MM = 1.0
 
 
 def gram_schmidt(A: np.ndarray) -> np.ndarray:
@@ -38,14 +41,19 @@ def precompute_logE_block(spinel_block: np.ndarray) -> np.ndarray:
     logE_stack = np.empty((N_all, 3, 3), dtype=np.float32)
     for i in range(N_all):
         eigenvals = spinel_block[i, :3].astype(np.float64).copy()
-        eigenvals[eigenvals <= 0] = 1e-8
+        if not np.all(np.isfinite(eigenvals)) or np.any(eigenvals <= 0):
+            raise ValueError('EigenVal1-3 must be finite and strictly positive')
+        semiaxes = np.sqrt(5.0 * eigenvals)
         q = np.vstack([
             spinel_block[i, 3:6],
             spinel_block[i, 6:9],
             spinel_block[i, 9:12]
         ]).astype(np.float64)
-        q = gram_schmidt(q)
-        logETilde = np.diag(np.log(eigenvals))
+        if not np.all(np.isfinite(q)):
+            raise ValueError('EigenVec1-3 must be finite')
+        u, _, vh = np.linalg.svd(q)
+        q = u @ vh
+        logETilde = np.diag(np.log(semiaxes / REFERENCE_LENGTH_MM))
         logE = q.T @ logETilde @ q
         logE = (logE + logE.T) * 0.5
         logE_stack[i] = logE.astype(np.float32)
@@ -62,8 +70,7 @@ def calculate_T_Pprime_from_vals(vals_sorted: np.ndarray) -> Tuple[float, float]
         T = 0.0
     else:
         T = (ln2 - ln3 - ln1 + ln2) / denom
-    lm = (l1 + l2 + l3) / 3.0
-    ln_m = np.log(lm)
+    ln_m = (ln1 + ln2 + ln3) / 3.0
     Pp = float(np.exp(np.sqrt(2.0 * ((ln1 - ln_m) ** 2 + (ln2 - ln_m) ** 2 + (ln3 - ln_m) ** 2))))
     return T, Pp
 
@@ -71,15 +78,21 @@ def calculate_T_Pprime_from_vals(vals_sorted: np.ndarray) -> Tuple[float, float]
 def eigvals_from_logMean(logMean: np.ndarray) -> np.ndarray:
     evals_log, _ = np.linalg.eigh((logMean + logMean.T) * 0.5)
     evals_log_sorted = np.sort(evals_log)[::-1]
-    vals = np.exp(evals_log_sorted)
-    return vals
+    relative_semiaxes = np.exp(evals_log_sorted)
+    return relative_semiaxes * REFERENCE_LENGTH_MM
 
 
-def bootstrap_tp_samples(logE_retained: np.ndarray, n_bootstrap: int) -> Tuple[list, list]:
+def bootstrap_tp_samples(
+    logE_retained: np.ndarray,
+    n_bootstrap: int,
+    rng: Optional[np.random.Generator] = None,
+) -> Tuple[list, list]:
     N = int(logE_retained.shape[0])
+    if rng is None:
+        rng = np.random.default_rng(42)
     t_samples, p_samples = [], []
     for _ in range(n_bootstrap):
-        idx_local = np.random.randint(0, N, size=N)
+        idx_local = rng.integers(0, N, size=N)
         logMean = logE_retained[idx_local].mean(axis=0)
         vals = eigvals_from_logMean(logMean)
         T_val, Pp_val = calculate_T_Pprime_from_vals(vals)
@@ -88,5 +101,3 @@ def bootstrap_tp_samples(logE_retained: np.ndarray, n_bootstrap: int) -> Tuple[l
         if not np.isnan(Pp_val):
             p_samples.append(float(Pp_val))
     return t_samples, p_samples
-
-

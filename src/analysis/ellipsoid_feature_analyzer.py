@@ -8,44 +8,49 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.preprocessing import StandardScaler
 from scipy import stats
 import warnings
 warnings.filterwarnings('ignore')
 
-from features.ellipsoid_feature_engineering_legacy import JoshuaFeatureEngineer
+from features.res_aware_feature_engineering import ResolutionAwareFeatureEngineer
 
 
 class JoshuaFeatureAnalyzer:
     """Feature analyzer based on feature (log-ellipsoid tensor) methodology"""
     
     def __init__(self):
-        self.scaler = StandardScaler()
-        self.feature_engineer = JoshuaFeatureEngineer()
+        self.feature_engineer = ResolutionAwareFeatureEngineer()
         self.feature_importance_scores = {}
         self.correlation_matrix = None
         self.original_data = None
 
     def analyze_feature_differences(self, df, labels, sample_ids=None, voxel_sizes=None):
-        print("🔬 Performing feature analysis using feature method...")
+        print("Performing feature analysis using feature method...")
         self.original_data = df.copy()
         removed_particles = df[labels == 1]
         kept_particles = df[labels == 0]
-        print(f"📊 Data summary:")
+        print(f"Data summary:")
         print(f"   - Total particles: {len(df)}")
         print(f"   - Removed particles: {len(removed_particles)} ({len(removed_particles)/len(df)*100:.1f}%)")
         print(f"   - Kept particles: {len(kept_particles)} ({len(kept_particles)/len(df)*100:.1f}%)")
-        if voxel_sizes is not None:
-            print("📏 Applying voxel size normalization...")
-            for sample_id, voxel_size in voxel_sizes.items():
-                sample_mask = df['SampleID'] == sample_id
-                if sample_mask.any():
-                    self.feature_engineer.voxel_size_mm = voxel_size
-                    print(f"   - Sample {sample_id}: {voxel_size} mm")
-        print("🔬 Extracting features...")
-        features_df = self.feature_engineer.extract_joshua_features(df)
+        if voxel_sizes is None or 'SampleID' not in df.columns:
+            raise ValueError('SampleID and sample-specific voxel sizes are required')
+        print("Applying sample-specific voxel sizes...")
+        for sample_id in df['SampleID'].unique():
+            if sample_id not in voxel_sizes:
+                raise ValueError(f'Missing voxel size for sample {sample_id}')
+            print(f"   - Sample {sample_id}: {voxel_sizes[sample_id]} mm")
+        print("Extracting features...")
+        features_df = pd.DataFrame(index=df.index, columns=[
+            'VoxelCount', 'L11', 'L22', 'L33', 'sqrt2_L12', 'sqrt2_L13', 'sqrt2_L23'
+        ], dtype=float)
+        for sample_id in df['SampleID'].unique():
+            sample_mask = df['SampleID'] == sample_id
+            features_df.loc[sample_mask] = self.feature_engineer._build_unscaled_features(
+                df.loc[sample_mask], float(voxel_sizes[sample_id])
+            ).values
         feature_stats = self.calculate_joshua_feature_statistics(features_df, labels)
-        print("🔗 Computing feature correlation matrix...")
+        print("Computing feature correlation matrix...")
         self.correlation_matrix = features_df.corr()
         print(f"   - Computed correlations for {len(features_df.columns)} features")
         selected_features = {
@@ -58,14 +63,15 @@ class JoshuaFeatureAnalyzer:
             'selected_features': selected_features,
             'correlation_matrix': self.correlation_matrix,
             'features_df': features_df,
+            'feature_descriptions': self.feature_engineer.feature_names(),
             'removed_particles': removed_particles,
             'kept_particles': kept_particles
         }
-        print("✅ Feature analysis completed!")
+        print("Feature analysis completed!")
         return results
 
     def calculate_joshua_feature_statistics(self, features_df, labels):
-        print("📈 Computing feature statistics...")
+        print("Computing feature statistics...")
         removed_particles = features_df[labels == 1]
         kept_particles = features_df[labels == 0]
         feature_stats = {}
@@ -104,13 +110,13 @@ class JoshuaFeatureAnalyzer:
                 }
                 print(f"   - {column}: d={cohens_d:.3f}, p={p_value:.2e}, significant={feature_stats[column]['is_significant']}")
             except Exception as e:
-                print(f"   ⚠️ Error processing feature {column}: {e}")
+                print(f"   Error processing feature {column}: {e}")
                 continue
-        print(f"   ✅ Completed statistical analysis for {len(feature_stats)} features")
+        print(f"   Completed statistical analysis for {len(feature_stats)} features")
         return feature_stats
 
     def visualize_joshua_feature_analysis(self, analysis_results, save_path=None):
-        print("📊 Generating feature analysis visualization...")
+        print("Generating feature analysis visualization...")
         feature_stats = analysis_results['feature_stats']
         fig, axes = plt.subplots(2, 2, figsize=(15, 12))
         fig.suptitle('Feature Analysis Results', fontsize=16, fontweight='bold')
@@ -175,12 +181,12 @@ class JoshuaFeatureAnalyzer:
         plt.tight_layout()
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
-            print(f"📁 Chart saved to: {save_path}")
+            print(f"Chart saved to: {save_path}")
         plt.show()
         return fig
 
     def generate_joshua_feature_report(self, analysis_results, output_path=None):
-        print("📝 Generating feature analysis report...")
+        print("Generating feature analysis report...")
         feature_stats = analysis_results['feature_stats']
         feature_engineer = self.feature_engineer
         report = []
@@ -236,5 +242,5 @@ class JoshuaFeatureAnalyzer:
         if output_path:
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(report_text)
-            print(f"📁 Report saved to: {output_path}")
+            print(f"Report saved to: {output_path}")
         return report_text

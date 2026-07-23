@@ -272,24 +272,24 @@ def validate_data_file(filepath: str, mode: str = 'both') -> None:
     print("=" * 50)
     
     if results['valid']:
-        print("✅ Data format is valid!")
+        print("Data format is valid!")
     else:
-        print("❌ Data format has errors:")
+        print("Data format has errors:")
         for error in results['errors']:
             print(f"  - {error}")
     
     if results['warnings']:
-        print("\n⚠️  Warnings:")
+        print("\n Warnings:")
         for warning in results['warnings']:
             print(f"  - {warning}")
     
     if results['suggestions']:
-        print("\n💡 Suggestions:")
+        print("\nSuggestions:")
         for suggestion in results['suggestions']:
             print(f"  - {suggestion}")
     
     if results['data_quality']:
-        print(f"\n📊 Data Quality:")
+        print(f"\nData Quality:")
         print(f"  - Particles: {results['data_quality']['n_particles']}")
         if results['data_quality']['missing_values']:
             print(f"  - Missing values: {results['data_quality']['missing_values']}")

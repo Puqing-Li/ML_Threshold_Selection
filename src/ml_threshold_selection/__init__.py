@@ -1,8 +1,8 @@
 """
 ML Threshold Selection for XRCT Particle Analysis
 
-A machine learning-driven adaptive threshold selection system for X-ray computed 
-tomography (XRCT) particle analysis.
+An expert-guided threshold selection system for X-ray computed tomography
+(XRCT) particle analysis.
 """
 
 __version__ = "1.3.0"

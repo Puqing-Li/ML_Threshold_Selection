@@ -23,7 +23,7 @@ warnings.filterwarnings('ignore')
 
 
 class SupervisedThresholdLearner:
-    """Supervised learning system for artifact classification"""
+    """Legacy API for supervised expert-threshold pseudo-label transfer."""
     
     def __init__(self, random_state: int = 42):
         """Initialize supervised learner
@@ -44,7 +44,7 @@ class SupervisedThresholdLearner:
         
         Args:
             X: Feature matrix
-            y: Target labels (0=normal, 1=artifact)
+            y: Target labels (0=retained class, 1=below-threshold class)
             sample_ids: Sample identifiers for cross-validation
             cv_folds: Number of CV folds
             
@@ -111,13 +111,13 @@ class SupervisedThresholdLearner:
         self.model.fit(X, y)
     
     def predict_proba(self, X: pd.DataFrame) -> np.ndarray:
-        """Predict artifact probabilities
+        """Predict probabilities of the expert-defined below-threshold class.
         
         Args:
             X: Feature matrix
             
         Returns:
-            Array of artifact probabilities
+            Array of below-threshold-class probabilities
         """
         if self.model is None:
             raise ValueError("Model not trained yet")
@@ -132,8 +132,8 @@ class SupervisedThresholdLearner:
         """Find optimal threshold for given volumes and probabilities
         
         Args:
-            volumes: Array of particle volumes
-            probabilities: Array of artifact probabilities
+            volumes: Array of object volumes
+            probabilities: Array of below-threshold-class probabilities
             
         Returns:
             Tuple of (optimal_threshold, uncertainty)

@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Utility feature extraction for quick, non-pipeline use.
-"""
+"""Exploratory feature extraction outside the reported paper pipeline."""
 
 from __future__ import annotations
 
@@ -15,8 +13,14 @@ def extract_simple_features(df: pd.DataFrame) -> pd.DataFrame:
     features['log_volume'] = np.log10(df['Volume3d (mm^3) '].values)
     features['volume'] = df['Volume3d (mm^3) '].values
     if 'EigenVal1' in df.columns:
-        eigenvals = df[['EigenVal1', 'EigenVal2', 'EigenVal3']].values
-        a, b, c = np.sqrt(eigenvals[:, 0]), np.sqrt(eigenvals[:, 1]), np.sqrt(eigenvals[:, 2])
+        eigenvals = df[['EigenVal1', 'EigenVal2', 'EigenVal3']].values.astype(float)
+        if not np.all(np.isfinite(eigenvals)) or np.any(eigenvals <= 0):
+            raise ValueError('EigenVal1-3 must be finite and strictly positive')
+        a, b, c = (
+            np.sqrt(5.0 * eigenvals[:, 0]),
+            np.sqrt(5.0 * eigenvals[:, 1]),
+            np.sqrt(5.0 * eigenvals[:, 2]),
+        )
         features['a'] = a
         features['b'] = b
         features['c'] = c
@@ -80,5 +84,4 @@ def extract_simple_features(df: pd.DataFrame) -> pd.DataFrame:
     if 'eigenvec1_max_alignment' in features:
         features['is_voxel_aligned'] = (features['eigenvec1_max_alignment'] > 0.9).astype(int)
     return pd.DataFrame(features)
-
 

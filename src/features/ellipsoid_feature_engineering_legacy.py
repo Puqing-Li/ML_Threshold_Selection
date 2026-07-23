@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Legacy Ellipsoid Feature Engineering (file renamed from joshua_feature_engineering.py)
+"""Historical implementation retained only to document pre-audit behavior.
+
+It is not imported by the corrected analysis or GUI pipeline and must not be
+used to reproduce the manuscript. In particular, it predates the audited Avizo
+covariance conversion and continuous voxel-count definition.
 """
 
 import pandas as pd
@@ -81,5 +84,4 @@ class JoshuaFeatureEngineer:
             'sqrt2_L13': 'Log-ellipsoid tensor off-diagonal element √2L₁₃',
             'sqrt2_L23': 'Log-ellipsoid tensor off-diagonal element √2L₂₃',
         }
-
 

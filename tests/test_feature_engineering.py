@@ -64,7 +64,7 @@ class TestFeatureEngineer:
         np.testing.assert_array_almost_equal(features['log_volume'], expected_log_vol)
         
         # Check axis length calculation
-        expected_a = np.sqrt(self.sample_data['EigenVal1'].values)
+        expected_a = np.sqrt(5.0 * self.sample_data['EigenVal1'].values)
         np.testing.assert_array_almost_equal(features['a'], expected_a)
     
     def test_extract_orientation_features(self):

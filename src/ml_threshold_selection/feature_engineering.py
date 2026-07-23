@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Feature engineering module for particle analysis
+"""Exploratory particle features outside the reported seven-feature pipeline.
+
+The manuscript classifier uses ``features.res_aware_feature_engineering``.
+This module remains for backward compatibility and uses the same audited Avizo
+covariance-eigenvalue to equivalent-semiaxis conversion.
 """
 
 import numpy as np
@@ -38,8 +41,14 @@ class FeatureEngineer:
         features['log_volume'] = np.log10(df['Volume3d (mm^3) '].values)
         
         # Ellipsoid axis lengths
-        eigenvals = df[['EigenVal1', 'EigenVal2', 'EigenVal3']].values
-        a, b, c = np.sqrt(eigenvals[:, 0]), np.sqrt(eigenvals[:, 1]), np.sqrt(eigenvals[:, 2])
+        eigenvals = df[['EigenVal1', 'EigenVal2', 'EigenVal3']].values.astype(float)
+        if not np.all(np.isfinite(eigenvals)) or np.any(eigenvals <= 0):
+            raise ValueError('EigenVal1-3 must be finite and strictly positive')
+        a, b, c = (
+            np.sqrt(5.0 * eigenvals[:, 0]),
+            np.sqrt(5.0 * eigenvals[:, 1]),
+            np.sqrt(5.0 * eigenvals[:, 2]),
+        )
         features['a'] = a
         features['b'] = b  
         features['c'] = c

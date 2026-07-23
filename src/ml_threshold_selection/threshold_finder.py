@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Adaptive threshold finder for particle analysis
+"""Legacy threshold finder retained for public-API compatibility.
+
+This class evaluates every sorted object volume and applies an ``epsilon``
+condition before curvature selection. It is not the 50-point log-grid dual
+threshold algorithm reported in the manuscript. Manuscript reproduction uses
+``prediction_analysis.compute_dual_thresholds``.
 """
 
 import numpy as np
@@ -13,15 +17,15 @@ warnings.filterwarnings('ignore')
 
 
 class AdaptiveThresholdFinder:
-    """Adaptive threshold finder using A(V) curve analysis"""
+    """Legacy adaptive finder; not the manuscript threshold implementation."""
     
     def __init__(self, epsilon: float = 0.03, tau: float = 0.02, n_min: int = 50):
         """Initialize threshold finder
         
         Args:
-            epsilon: Tolerance for artifact rate (default: 0.03)
+            epsilon: Tolerance for retained-population mean class probability
             tau: Platform detection threshold (default: 0.02)
-            n_min: Minimum number of particles to retain (default: 50)
+            n_min: Minimum number of objects to retain (default: 50)
         """
         self.epsilon = epsilon
         self.tau = tau
@@ -32,8 +36,8 @@ class AdaptiveThresholdFinder:
         """Find optimal threshold using A(V) curve analysis
         
         Args:
-            volumes: Array of particle volumes
-            probabilities: Array of artifact probabilities
+            volumes: Array of object volumes
+            probabilities: Probabilities of the expert-defined below-threshold class
             method: Method for threshold selection ('inflection' or 'first_valid')
             
         Returns:
@@ -44,7 +48,7 @@ class AdaptiveThresholdFinder:
         volumes_sorted = volumes[sort_idx]
         probs_sorted = probabilities[sort_idx]
         
-        # Calculate expected artifact rate A(V)
+        # Calculate the retained-population mean pseudo-label probability.
         n_particles = len(volumes)
         artifact_rates = []
         volume_thresholds = []
@@ -92,7 +96,7 @@ class AdaptiveThresholdFinder:
         
         Args:
             volumes: Volume thresholds
-            rates: Artifact rates
+            rates: Retained-population mean class probabilities
             valid_indices: Indices of valid thresholds
             
         Returns:
@@ -120,8 +124,8 @@ class AdaptiveThresholdFinder:
         """Estimate threshold uncertainty
         
         Args:
-            volumes: Array of particle volumes
-            probabilities: Array of artifact probabilities
+            volumes: Array of object volumes
+            probabilities: Probabilities of the expert-defined below-threshold class
             threshold: Threshold value
             
         Returns:
@@ -139,8 +143,8 @@ class AdaptiveThresholdFinder:
         """Plot A(V) curve for visualization
         
         Args:
-            volumes: Array of particle volumes
-            probabilities: Array of artifact probabilities
+            volumes: Array of object volumes
+            probabilities: Probabilities of the expert-defined below-threshold class
             threshold: Optional threshold to highlight
             
         Returns:
@@ -179,7 +183,7 @@ class AdaptiveThresholdFinder:
         Args:
             epsilon: New tolerance value
             tau: New platform threshold
-            n_min: New minimum particle count
+            n_min: New minimum object count
         """
         if epsilon is not None:
             self.epsilon = epsilon

@@ -1,217 +1,136 @@
 # User Guide
 
-Complete user manual for the ML Threshold Selection toolkit.
+This guide describes the v1.3.0 resolution-aware GUI workflow.
 
-## Table of Contents
+## Install and launch
 
-- [Quick Start](#quick-start)
-- [GUI Workflow](#gui-workflow)
-- [Data Requirements](#data-requirements)
-- [Command Line Usage](#command-line-usage)
-- [Python API](#python-api)
-- [Troubleshooting](#troubleshooting)
-
-## Quick Start
-
-### 1. Installation
+On Windows, double-click `run_app.bat`. On macOS, use `run_app.command`. The
+application can also be started from the repository root with:
 
 ```bash
-git clone https://github.com/Puqing-Li/ML_Threshold_Selection.git
-cd ML_Threshold_Selection
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-pip install -e .
-```
-
-### 2. Determine Expert Thresholds
-
-Before using the system, determine expert thresholds using TomoFab or similar software:
-
-1. Load your particle data in TomoFab
-2. Generate lower hemisphere equal-area projections
-3. Analyze fabric patterns to identify optimal volume thresholds
-4. Record thresholds for input into the system
-
-### 3. Launch Application
-
-```bash
+python -m pip install -r requirements.txt
 python main.py
 ```
 
-## GUI Workflow
+The repository intentionally contains no released classifier. Train a model
+before loading test data.
 
-### Step 1: Load Training Data
-- Click **"1. Load Training Data"**
-- Select directory containing your training files
-- Verify loaded samples
+## Required object-table columns
 
-### Step 2: Input Expert Thresholds
-- Click **"2. Input Expert Thresholds"**
-- Enter thresholds in format: `sample_id:threshold_value`
-- Use scientific notation (e.g., `1.23e-06`)
-- Click **"Save Thresholds"**
+| Column | Meaning | Required units |
+|---|---|---|
+| `Volume3d (mm^3) ` | Object volume | mm^3 |
+| `EigenVal1-3` | Coordinate-covariance eigenvalues | mm^2 when calculated in calibrated physical coordinates |
+| `EigenVec1X` to `EigenVec3Z` | Principal-axis direction cosines | unit vectors |
 
-### Step 3: Input Voxel Sizes
-- Click **"3. Input Voxel Sizes"**
-- Enter voxel size for each sample in millimeters
-- Click **"Save Voxel Sizes"**
+The trailing space in `Volume3d (mm^3) ` is retained for compatibility with
+the Avizo export. `tools/BatchFile.py` prepares app-format tables and records
+invalid-row exclusions.
 
-### Step 4: Feature Analysis (Optional)
-- Click **"4. Feature Analysis"**
-- Review feature extraction results
-- Check for data quality issues
+Do not replace missing values with zero. The active workflow requires finite,
+strictly positive volumes and eigenvalues, finite direction cosines, and a
+full-rank principal-axis basis.
 
-### Step 5: Train Model
-- Click **"5. Train Model"**
-- Select model type (LightGBM recommended)
-- Wait for training completion
-- Review training results
+## Train a model
 
-### Step 6: Load Test Data
-- Click **"6a. Load Single Test Data"** (or **"6b. Load Multi Test Data"** for several samples)
-- Select your test data file(s)
-- Verify loaded data
+1. Click **1. Load Training Data** and select every training table.
+2. Click **2. Input Expert Thresholds** and enter one physical-volume threshold
+   in mm^3 for every selected sample.
+3. Click **3. Input Voxel Sizes** and enter the measured isotropic voxel edge
+   length in mm/voxel for every selected sample.
+4. Optionally click **4. Feature Analysis** to inspect the seven calculated
+   features.
+5. Click **5. Train Model**.
 
-### Step 7: Predict Analysis
-- Click **"7. Predict Analysis"**
-- Review predicted thresholds
-- Check dual threshold analysis plot
+Training stops if a sample lacks either required input. No default voxel size,
+first-sample fallback, or integer rounding of the expert threshold is used.
 
-### Step 8: Export Results
-- Click **"8. Export / Reports"**
-- Select output directory
-- Choose export format
+The saved model bundle in `models/` contains the classifier, fitted scaler,
+feature-schema marker, input mapping, and provenance metadata. **Load Last
+Model** accepts only the current resolution-aware schema.
 
-## Data Requirements
+The displayed training AUC and accuracy measure fit to expert-derived
+pseudo-labels. They are not independent validation of physical artifacts or
+proof that the model reproduces a historical scalar threshold.
 
-### Required Columns
+## Analyse a sample
 
-| Column Name | Description | Units |
-|-------------|-------------|-------|
-| `Volume3d (mm^3) ` | Particle volume | mm³ |
-| `EigenVal1`, `EigenVal2`, `EigenVal3` | Ellipsoid eigenvalues | dimensionless |
-| `EigenVec1X`, `EigenVec1Y`, `EigenVec1Z` | First principal axis direction | unit vector |
-| `EigenVec2X`, `EigenVec2Y`, `EigenVec2Z` | Second principal axis direction | unit vector |
-| `EigenVec3X`, `EigenVec3Y`, `EigenVec3Z` | Third principal axis direction | unit vector |
+1. Train a model or click **Load Last Model**.
+2. Click **6a. Load Single Test Data** for one sample or **6b. Load Multi Test
+   Data** for a batch.
+3. Enter the measured voxel edge length for every test sample. The value is
+   never inferred from a filename or another sample.
+4. Click **7. Predict Analysis**.
+5. Inspect the loose and strict operating points and the number of retained
+   objects.
+6. Use **Mean Fabric**, **Fabric Boxplots**, and **8. Export / Reports** as
+   required.
 
-### Data Quality Guidelines
+The loose threshold is an inflection-rule candidate from the cumulative model
+score curve. The strict threshold excludes every object whose score exceeds
+the configured tolerance. These are sensitivity bounds that still require
+geological and image-quality review; neither is a physical ground truth.
 
-- **Missing Values**: Will be filled with 0
-- **Data Types**: All feature columns must be numeric
-- **Volume Units**: Ensure volumes are in mm³ (not voxels)
-- **Coordinate System**: Ensure consistent coordinate system across samples
+## Multi-sample input
 
-## Command Line Usage
+Sample IDs are derived from filenames and preserved in the combined table.
+Before analysis, verify that each displayed ID maps to the correct scan and
+voxel size. The workflow stops if any selected ID lacks a valid mapping.
 
-Cross-validation of the classifier (reproduces the reported AUC) can be run from the repository root:
+## Outputs
+
+Generated files are written under `outputs/` and may include:
+
+- loose and strict filtered object tables;
+- voxel and physical-volume threshold reports;
+- mean-fabric tensors and principal directions;
+- `P'` and `T` summaries; and
+- bootstrap figures and tables.
+
+Generated results are ignored by Git. Freeze only the outputs produced by the
+same model, code commit, voxel-size map, and probability tolerance used in the
+reported analysis.
+
+## Pseudo-label ranking evaluation
+
+The supplied five-sample evaluation can be rerun with:
 
 ```bash
-python cross_validation.py --data "trained model" --config examples/expert_thresholds.csv
+python cross_validation.py \
+  --data training_data \
+  --config training_data/training_config.csv \
+  --out outputs/S3_validation
 ```
 
-For end-to-end analysis, use the GUI application (`python main.py`) or the double-click launchers described in the README.
-
-## Python API
-
-### Supervised Learning
-
-```python
-from ml_threshold_selection.supervised_learner import SupervisedThresholdLearner
-from ml_threshold_selection.feature_engineering import FeatureEngineer
-import pandas as pd
-
-# Load data
-df = pd.read_excel('your_particle_data.xlsx')
-
-# Extract features
-feature_engineer = FeatureEngineer()
-features = feature_engineer.extract_all_features(df)
-
-# Train model
-learner = SupervisedThresholdLearner()
-learner.train(features, df['label'].values)
-
-# Analyze sample
-results = learner.analyze_sample(df)
-print(f"Optimal threshold: {results['threshold']:.2e} mm³")
-```
-
-### Semi-supervised Learning
-
-```python
-from ml_threshold_selection.semi_supervised_learner import SemiSupervisedThresholdLearner
-
-# Initialize learner
-learner = SemiSupervisedThresholdLearner()
-
-# Add expert thresholds
-learner.add_expert_threshold('sample_001', 1.23e-06, confidence=1.0)
-learner.load_sample_data('sample_001', 'sample_001_data.xlsx')
-
-# Train model
-learner.train(method='threshold_based', model_type='lightgbm')
-
-# Analyze sample
-results = learner.analyze_sample(df)
-```
+The reported AUC values quantify ranking of the configured expert-derived
+pseudo-labels. They do not independently validate physical artifact identity
+or scalar-threshold recovery.
 
 ## Troubleshooting
 
-### Common Issues
+### Training reports a missing threshold or voxel size
 
-#### Data Loading Errors
-- **Problem**: "No valid data files found"
-- **Solution**: Check file format and required columns
+Enter one valid value for every listed sample. Blank values are not allowed.
 
-#### Feature Extraction Errors
-- **Problem**: "Missing required columns"
-- **Solution**: Verify column names and data types
+### Prediction reports a schema mismatch
 
-#### Model Training Errors
-- **Problem**: "Training failed"
-- **Solution**: Check data quality and sufficient samples
+The selected bundle was produced by the legacy global-0.03 workflow or an
+incompatible development schema. Retrain with the current code; do not bypass
+the schema check.
 
-#### Prediction Errors
-- **Problem**: "Prediction failed"
-- **Solution**: Ensure model is trained and test data format matches
+### Eigenvalue or principal-axis validation fails
 
-### Performance Issues
+Return to the source Avizo export and verify the covariance coordinate basis,
+units, and row completeness. Do not replace zero or negative eigenvalues with
+small constants.
 
-#### Memory Usage
-- Use `float32` for large datasets
-- Process samples in batches
-- Enable data type optimization
+### A stereonet remains scan-axis concentrated after filtering
 
-#### Speed Optimization
-- Use LightGBM for faster training
-- Enable parallel processing
-- Consider feature selection
-
-## FAQ
-
-### Q: What is the difference between loose and strict thresholds?
-**A**: The loose threshold is placed at the inflection point of the cumulative artifact-rate curve (the volume that maximises the second derivative of the smoothed curve), balancing artifact removal against grain retention. The strict threshold is the smallest volume at which the retained population contains no object with an artifact probability above a small tolerance (0.01 by default; configurable via the Config Threshold dialog).
-
-### Q: How do I determine expert thresholds?
-**A**: Use TomoFab to generate stereographic projections and analyze fabric patterns to identify optimal volume thresholds.
-
-### Q: What if I don't have expert thresholds?
-**A**: Use supervised learning with labeled data instead.
-
-### Q: How accurate are the predictions?
-**A**: Under leave-one-sample-out and pooled five-fold cross-validation across the five training samples (35,745 segmented objects), the classifier attains held-out AUC values of 0.96-0.99; this can be reproduced directly with `cross_validation.py` on the datasets shipped in `trained model/`. Separately, when the classifier is trained per sample through the GUI, the machine-learning threshold reproduces the independently determined expert reference threshold to within 1-6% (S3 Fig of the companion article).
-
-### Q: Can I use my own data format?
-**A**: The system expects specific column names. Modify your data to match the required format.
-
-### Q: What if my data has different units?
-**A**: Ensure all volumes are in mm³ and all distances are in mm.
-
-### Q: How do I interpret fabric analysis results?
-**A**: For detailed interpretation of T and P' parameters, refer to the original literature (Jelínek, 1981).
+Do not assume that every concentration is an artifact. Compare the unfiltered,
+loose, strict, and expert-reviewed results with the segmented volume and the
+sample's expected geological fabric.
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/Puqing-Li/ML_Threshold_Selection/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Puqing-Li/ML_Threshold_Selection/discussions)
+- Issues: https://github.com/Puqing-Li/ML_Threshold_Selection/issues
+- Discussions: https://github.com/Puqing-Li/ML_Threshold_Selection/discussions

@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Feature analysis pipeline and related helpers, extracted from main.
+"""Feature analysis helpers and an unused legacy multi-sample threshold path.
+
+``calculate_adaptive_threshold`` and ``multi_sample_test`` are retained for
+compatibility but are not called by the GUI and are not part of the manuscript
+analysis. The reported dual thresholds use
+``prediction_analysis.compute_dual_thresholds``.
 """
 
 from __future__ import annotations
@@ -13,13 +17,13 @@ import pandas as pd
 
 def run_feature_analysis(app):
     if app.training_data is None:
-        app.log("❌ Please load training data first")
+        app.log("Please load training data first")
         return
     if not app.expert_thresholds:
-        app.log("❌ Please enter expert thresholds first")
+        app.log("Please enter expert thresholds first")
         return
     try:
-        app.log("🔬 Starting feature analysis...")
+        app.log("Starting feature analysis...")
         # Labels
         app.generate_labels_from_thresholds()
         df = app.training_data.copy()
@@ -39,20 +43,17 @@ def run_feature_analysis(app):
         labels = df['label'].values
         sample_ids = df['SampleID'].values if 'SampleID' in df.columns else None
         if not app.voxel_sizes:
-            app.log("❌ Please input voxel sizes first")
+            app.log("Please input voxel sizes first")
             return
-        first_sample_id = list(app.voxel_sizes.keys())[0]
-        app.ellipsoid_feature_engineer.voxel_size_mm = float(app.voxel_sizes[first_sample_id])
-        app.log(f"🔧 Setting feature analysis voxel size: {app.ellipsoid_feature_engineer.voxel_size_mm:.4f} mm")
         app.ellipsoid_analysis_results = app.ellipsoid_feature_analyzer.analyze_feature_differences(
             df, labels, sample_ids, app.voxel_sizes
         )
         display_feature_analysis_results(app)
-        app.log("📊 Feature analysis completed! Generate visualization charts?")
-        app.log("   Click '📊 Training Visualization' to view detailed charts")
-        app.log("✅ Feature analysis completed")
+        app.log("Feature analysis completed! Generate visualization charts?")
+        app.log("   Click 'Training Visualization' to view detailed charts")
+        app.log("Feature analysis completed")
     except Exception as e:
-        app.log(f"❌ Feature analysis failed: {e}")
+        app.log(f"Feature analysis failed: {e}")
         import traceback
         app.log(f"Detailed error: {traceback.format_exc()}")
 
@@ -64,21 +65,27 @@ def display_feature_analysis_results(app):
     features_df = app.ellipsoid_analysis_results['features_df']
     significant = [(n, s) for n, s in feature_stats.items() if s['is_significant']]
     significant.sort(key=lambda x: x[1]['cohens_d'], reverse=True)
-    app.log("🎯 Feature analysis significant features (p<0.05, Cohen's d>0.2):")
+    app.log("Feature analysis significant features (p<0.05, Cohen's d>0.2):")
     for name, stats in significant:
         app.log(f"   - {name}: d={stats['cohens_d']:.3f}, p={stats['p_value']:.2e}")
-    app.log(f"🔬 Feature analysis features (total {len(features_df.columns)}):")
+    app.log(f"Feature analysis features (total {len(features_df.columns)}):")
     for col in features_df.columns:
         stats = feature_stats[col]
         significance = "significant" if stats['is_significant'] else "not significant"
         app.log(f"   - {col}: d={stats['cohens_d']:.3f}, {significance}")
-    feature_descriptions = app.ellipsoid_feature_engineer.get_feature_descriptions()
-    app.log("📋 Feature descriptions:")
+    feature_descriptions = app.ellipsoid_analysis_results['feature_descriptions']
+    app.log("Feature descriptions:")
     for feature, description in feature_descriptions.items():
         app.log(f"   - {feature}: {description}")
 
 
 def calculate_adaptive_threshold(volumes: np.ndarray, probabilities: np.ndarray, target_artifact_rate: float = 0.05):
+    """Legacy percentile search; not the manuscript threshold algorithm.
+
+    ``target_artifact_rate`` and the corresponding result keys are historical
+    API names. The values are pseudo-label class probabilities, not validated
+    physical-artifact rates.
+    """
     volume_indices = np.argsort(volumes)
     sorted_volumes = volumes[volume_indices]
     sorted_probabilities = probabilities[volume_indices]
@@ -98,21 +105,22 @@ def calculate_adaptive_threshold(volumes: np.ndarray, probabilities: np.ndarray,
     retained_count = int(np.sum(retained_mask))
     removed_count = int(len(volumes) - retained_count)
     retention_rate = retained_count / float(len(volumes))
-    actual_artifact_rate = float(np.mean(probabilities[~retained_mask])) if removed_count > 0 else 0.0
+    removed_mean_class_probability = float(np.mean(probabilities[~retained_mask])) if removed_count > 0 else 0.0
     return {
         'threshold': float(best_threshold),
         'retained_count': retained_count,
         'removed_count': removed_count,
         'retention_rate': retention_rate,
         'target_artifact_rate': target_artifact_rate,
-        'actual_artifact_rate': actual_artifact_rate,
-        'artifact_rate_error': abs(actual_artifact_rate - target_artifact_rate),
+        'removed_mean_class_probability': removed_mean_class_probability,
+        'actual_artifact_rate': removed_mean_class_probability,
+        'artifact_rate_error': abs(removed_mean_class_probability - target_artifact_rate),
     }
 
 
 def multi_sample_test(app):
     if app.model is None:
-        app.log("❌ Please train or load model first")
+        app.log("Please train or load model first")
         return
     from tkinter import filedialog
     try:
@@ -122,10 +130,10 @@ def multi_sample_test(app):
         )
         if not test_files:
             return
-        app.log(f"🔄 Loading {len(test_files)} test files...")
+        app.log(f"Loading {len(test_files)} test files...")
         results = []
         for i, file_path in enumerate(test_files):
-            app.log(f"📁 Processing file {i+1}/{len(test_files)}: {os.path.basename(file_path)}")
+            app.log(f"Processing file {i+1}/{len(test_files)}: {os.path.basename(file_path)}")
             import os
             try:
                 test_data = pd.read_excel(file_path) if file_path.endswith('.xlsx') else pd.read_csv(file_path)
@@ -148,14 +156,15 @@ def multi_sample_test(app):
                     'retention_rate': threshold_result['retention_rate'],
                     'predicted_threshold': threshold_result['threshold'],
                     'target_artifact_rate': threshold_result['target_artifact_rate'],
+                    'removed_mean_class_probability': threshold_result['removed_mean_class_probability'],
                     'actual_artifact_rate': threshold_result['actual_artifact_rate'],
                     'artifact_rate_error': threshold_result['artifact_rate_error'],
                 })
-                app.log(f"   ✅ {sample_id}: {results[-1]['retained_particles']}/{results[-1]['total_particles']} retained, threshold={results[-1]['predicted_threshold']:.6f}")
+                app.log(f"   {sample_id}: {results[-1]['retained_particles']}/{results[-1]['total_particles']} retained, threshold={results[-1]['predicted_threshold']:.6f}")
             except Exception as e:
-                app.log(f"   ❌ Error processing {file_path}: {e}")
+                app.log(f"   Error processing {file_path}: {e}")
                 continue
-        app.log(f"\n📊 Multi-Sample Test Results Summary:")
+        app.log(f"\nMulti-Sample Test Results Summary:")
         app.log(f"   Total samples processed: {len(results)}")
         if results:
             import numpy as np
@@ -166,10 +175,8 @@ def multi_sample_test(app):
             output_path = filedialog.asksaveasfilename(title="Save Multi-Sample Results", defaultextension=".csv", filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
             if output_path:
                 results_df.to_csv(output_path, index=False)
-                app.log(f"✅ Results saved to: {output_path}")
+                app.log(f"Results saved to: {output_path}")
     except Exception as e:
-        app.log(f"❌ Multi-sample test failed: {e}")
+        app.log(f"Multi-sample test failed: {e}")
         import traceback
         app.log(f"Detailed error: {traceback.format_exc()}")
-
-

@@ -26,6 +26,7 @@ def run_fabric_boxplots(
     outputs_dir: str = 'outputs',
     n_bootstrap: int = 1000,
     min_particles: int = 50,
+    random_seed: int = 42,
 ) -> Tuple[str, str]:
     t_start_all = time.time()
 
@@ -45,24 +46,25 @@ def run_fabric_boxplots(
     bootstrap_T: Dict[float, list] = {}
     bootstrap_P: Dict[float, list] = {}
     particle_counts: Dict[float, int] = {}
+    rng = np.random.default_rng(random_seed)
 
     for vt in thresholds_mm3:
         mask = volumes >= vt
         retained_idx = np.flatnonzero(mask)
         N = int(retained_idx.size)
         particle_counts[vt] = N
-        logger.info(f"🔹 Threshold ≥ {vt:.6g} mm³ | N={N}")
+        logger.info(f"Threshold ≥ {vt:.6g} mm³ | N={N}")
         if N < min_particles:
             bootstrap_T[vt] = []
             bootstrap_P[vt] = []
-            logger.info("   ↳ skipped: insufficient particles")
+            logger.info("   skipped: insufficient particles")
             continue
         t0 = time.time()
         logE_retained = logE_stack[retained_idx]
-        t_samples, p_samples = bootstrap_tp_samples(logE_retained, n_bootstrap)
+        t_samples, p_samples = bootstrap_tp_samples(logE_retained, n_bootstrap, rng=rng)
         bootstrap_T[vt] = t_samples
         bootstrap_P[vt] = p_samples
-        logger.info(f"   ↳ valid T samples: {len(t_samples)}, valid P' samples: {len(p_samples)}, elapsed {time.time()-t0:.1f}s")
+        logger.info(f"   valid T samples: {len(t_samples)}, valid P' samples: {len(p_samples)}, elapsed {time.time()-t0:.1f}s")
 
     os.makedirs(outputs_dir, exist_ok=True)
     t_path_png = os.path.join(outputs_dir, 'Fabric_T_boxplot.png')
@@ -114,7 +116,7 @@ def run_fabric_boxplots(
         show=False,
     )
 
-    logger.info("✅ Fabric boxplots generated")
+    logger.info("Fabric boxplots generated")
     logger.info(f"   - T boxplot: {t_path_png}, {t_path_svg}")
     logger.info(f"   - P' boxplot: {p_path_png}, {p_path_svg}")
     logger.info(f"⏱️ Total time: {time.time()-t_start_all:.1f}s")

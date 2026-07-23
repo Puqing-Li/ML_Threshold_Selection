@@ -89,7 +89,7 @@ def compute_mean_fabric_single(
     
     # Compute eigendecomposition from mean ellipsoid matrix (as in reference code)
     # This ensures eigenvectors match the mean ellipsoid matrix
-    eigenvals, eigenvecs = np.linalg.eig(mean_ellipsoid_matrix)
+    eigenvals, eigenvecs = np.linalg.eigh(mean_ellipsoid_matrix)
     
     # Sort in descending order (largest first)
     sort_idx = np.argsort(eigenvals)[::-1]
@@ -225,7 +225,7 @@ def export_mean_fabric_txt(
         f.write("=" * 60 + "\n")
         f.write("Notes:\n")
         f.write("- V matrix: Each COLUMN is an eigenvector (principal axis). Column 0=Eigen1, Column 1=Eigen2, Column 2=Eigen3\n")
-        f.write("- For Avizo Clipping Plane: Foliation plane uses Eigen1 (col 0) and Eigen2 (col 1); Kinematic plane uses Eigen1 (col 0) and Eigen3 (col 2)\n")
+        f.write("- Principal-axis labels are geometric. Assign geological meanings only from independent sample and microstructural evidence.\n")
     
     return filepath
 
@@ -316,7 +316,7 @@ def format_mean_fabric_for_display(
     lines.append("=" * 60)
     lines.append("Notes:")
     lines.append("- V matrix: Each COLUMN is an eigenvector (principal axis). Column 0=Eigen1, Column 1=Eigen2, Column 2=Eigen3")
-    lines.append("- For Avizo Clipping Plane: Foliation plane uses Eigen1 (col 0) and Eigen2 (col 1); Kinematic plane uses Eigen1 (col 0) and Eigen3 (col 2)")
+    lines.append("- Columns 0-2 are geometric principal axes in the XRCT scan frame")
+    lines.append("- Assign foliation, lineation, or kinematic meaning only after independent orientation and microstructural interpretation")
     
     return "\n".join(lines)
-
