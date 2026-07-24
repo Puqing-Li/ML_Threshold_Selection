@@ -1,6 +1,10 @@
 {
   "format_version": 1,
   "keys": {
+    "feature_schema_version": {
+      "kind": "json",
+      "value": "resolution_aware_v2_per_sample_sqrt5"
+    },
     "model": {
       "kind": "lgb_booster",
       "file": "model.model.txt"
@@ -12,23 +16,23 @@
     "expert_thresholds": {
       "kind": "dict",
       "items": {
-        "totalAKAN20": {
+        "AKAN20": {
           "kind": "json",
           "value": 0.0039
         },
-        "totalANA16937": {
+        "ANA16937": {
           "kind": "json",
           "value": 0.0008
         },
-        "totalHL19335": {
+        "HL19335": {
           "kind": "json",
           "value": 0.001
         },
-        "totalLE03": {
+        "LE03": {
           "kind": "json",
           "value": 0.001
         },
-        "totalLE19": {
+        "LE19": {
           "kind": "json",
           "value": 0.0018
         }
@@ -37,27 +41,23 @@
     "voxel_sizes": {
       "kind": "dict",
       "items": {
-        "sample_001": {
+        "AKAN20": {
           "kind": "json",
           "value": 0.03
         },
-        "totalAKAN20": {
-          "kind": "json",
-          "value": 0.03
-        },
-        "totalANA16937": {
+        "ANA16937": {
           "kind": "json",
           "value": 0.04
         },
-        "totalHL19335": {
+        "HL19335": {
           "kind": "json",
           "value": 0.035
         },
-        "totalLE03": {
+        "LE03": {
           "kind": "json",
           "value": 0.03
         },
-        "totalLE19": {
+        "LE19": {
           "kind": "json",
           "value": 0.035
         }
@@ -66,11 +66,11 @@
     "training_files": {
       "kind": "json",
       "value": [
-        "D:/research/plosone/ML_Threshold_Selection copy 2/ML_Threshold_Selection copy 2/trained model/totalAKAN20.xlsx",
-        "D:/research/plosone/ML_Threshold_Selection copy 2/ML_Threshold_Selection copy 2/trained model/totalANA16937.xlsx",
-        "D:/research/plosone/ML_Threshold_Selection copy 2/ML_Threshold_Selection copy 2/trained model/totalHL19335.xlsx",
-        "D:/research/plosone/ML_Threshold_Selection copy 2/ML_Threshold_Selection copy 2/trained model/totalLE03.xlsx",
-        "D:/research/plosone/ML_Threshold_Selection copy 2/ML_Threshold_Selection copy 2/trained model/totalLE19.xlsx"
+        "D:/research/Github/ML_Threshold_Selection_v2_retrain/training_data/totalAKAN20.xlsx",
+        "D:/research/Github/ML_Threshold_Selection_v2_retrain/training_data/totalANA16937.xlsx",
+        "D:/research/Github/ML_Threshold_Selection_v2_retrain/training_data/totalHL19335.xlsx",
+        "D:/research/Github/ML_Threshold_Selection_v2_retrain/training_data/totalLE03.xlsx",
+        "D:/research/Github/ML_Threshold_Selection_v2_retrain/training_data/totalLE19.xlsx"
       ]
     },
     "features": {
@@ -98,23 +98,23 @@
         },
         "train_auc": {
           "kind": "json",
-          "value": 0.9890717455526256
+          "value": 0.9920809247779914
         },
         "train_accuracy": {
           "kind": "json",
-          "value": 0.9424534899986012
+          "value": 0.9491677157644426
         },
         "precision": {
           "kind": "json",
-          "value": 0.9546461402148633
+          "value": 0.96075037686338
         },
         "recall": {
           "kind": "json",
-          "value": 0.9329977810250581
+          "value": 0.9391987774260452
         },
         "f1": {
           "kind": "json",
-          "value": 0.9436978240043794
+          "value": 0.9498523445477879
         },
         "features": {
           "kind": "dataframe",
@@ -128,36 +128,36 @@
         "feature_stats": {
           "kind": "dict",
           "items": {
-            "Volume": {
+            "VoxelCount": {
               "kind": "dict",
               "items": {
                 "removed_mean": {
                   "kind": "json",
-                  "value": 17.467574585565437
+                  "value": 21.588175845982043
                 },
                 "kept_mean": {
                   "kind": "json",
-                  "value": 4288.401637616824
+                  "value": 4593.846018795305
                 },
                 "removed_std": {
                   "kind": "json",
-                  "value": 13.689445925708764
+                  "value": 20.802332873825183
                 },
                 "kept_std": {
                   "kind": "json",
-                  "value": 20050.19680064056
+                  "value": 25425.47321193922
                 },
                 "cohens_d": {
                   "kind": "json",
-                  "value": -0.30647226258288396
+                  "value": -0.25757755231606744
                 },
                 "p_value": {
                   "kind": "json",
-                  "value": 3.127909818135108e-182
+                  "value": 8.147777309704296e-130
                 },
                 "relative_difference": {
                   "kind": "json",
-                  "value": 99.59267867001206
+                  "value": 99.53006313756151
                 },
                 "is_significant": {
                   "kind": "json",
@@ -165,7 +165,7 @@
                 },
                 "t_statistic": {
                   "kind": "json",
-                  "value": -28.95478025419962
+                  "value": -24.34155221518659
                 }
               }
             },
@@ -174,23 +174,23 @@
               "items": {
                 "removed_mean": {
                   "kind": "json",
-                  "value": -3.6610802551940282
+                  "value": 5.716654314015247
                 },
                 "kept_mean": {
                   "kind": "json",
-                  "value": -2.5596479446423155
+                  "value": 3.525320361760923
                 },
                 "removed_std": {
                   "kind": "json",
-                  "value": 0.3154748949678841
+                  "value": 0.6310059813312964
                 },
                 "kept_std": {
                   "kind": "json",
-                  "value": 0.777950474922611
+                  "value": 1.5580295538064672
                 },
                 "cohens_d": {
                   "kind": "json",
-                  "value": -1.8784361279750088
+                  "value": 1.8604782257556556
                 },
                 "p_value": {
                   "kind": "json",
@@ -198,7 +198,7 @@
                 },
                 "relative_difference": {
                   "kind": "json",
-                  "value": 43.030617271299256
+                  "value": 62.15985293205344
                 },
                 "is_significant": {
                   "kind": "json",
@@ -206,7 +206,7 @@
                 },
                 "t_statistic": {
                   "kind": "json",
-                  "value": -177.47023775881362
+                  "value": 175.81861257023846
                 }
               }
             },
@@ -215,23 +215,23 @@
               "items": {
                 "removed_mean": {
                   "kind": "json",
-                  "value": -3.6383142587911776
+                  "value": 5.671444523573838
                 },
                 "kept_mean": {
                   "kind": "json",
-                  "value": -2.6051630964330865
+                  "value": 3.614796932446007
                 },
                 "removed_std": {
                   "kind": "json",
-                  "value": 0.35013762974773555
+                  "value": 0.7005615967423727
                 },
                 "kept_std": {
                   "kind": "json",
-                  "value": 0.7308129244579782
+                  "value": 1.4630680924187485
                 },
                 "cohens_d": {
                   "kind": "json",
-                  "value": -1.8224375748436425
+                  "value": 1.8073270451894998
                 },
                 "p_value": {
                   "kind": "json",
@@ -239,7 +239,7 @@
                 },
                 "relative_difference": {
                   "kind": "json",
-                  "value": 39.65783039736175
+                  "value": 56.89524555771294
                 },
                 "is_significant": {
                   "kind": "json",
@@ -247,7 +247,7 @@
                 },
                 "t_statistic": {
                   "kind": "json",
-                  "value": -172.1796258554498
+                  "value": 170.79572829551594
                 }
               }
             },
@@ -256,23 +256,23 @@
               "items": {
                 "removed_mean": {
                   "kind": "json",
-                  "value": -4.0060873286672924
+                  "value": 6.409018317713966
                 },
                 "kept_mean": {
                   "kind": "json",
-                  "value": -2.6969468671379127
+                  "value": 3.8011425791079927
                 },
                 "removed_std": {
                   "kind": "json",
-                  "value": 0.3812048256949334
+                  "value": 0.761067687415711
                 },
                 "kept_std": {
                   "kind": "json",
-                  "value": 0.8071691880375703
+                  "value": 1.6174976439918023
                 },
                 "cohens_d": {
                   "kind": "json",
-                  "value": -2.0966829366372632
+                  "value": 2.0798922138078146
                 },
                 "p_value": {
                   "kind": "json",
@@ -280,7 +280,7 @@
                 },
                 "relative_difference": {
                   "kind": "json",
-                  "value": 48.541574084426884
+                  "value": 68.60768004177203
                 },
                 "is_significant": {
                   "kind": "json",
@@ -288,7 +288,7 @@
                 },
                 "t_statistic": {
                   "kind": "json",
-                  "value": -198.08968414113315
+                  "value": 196.55363780396024
                 }
               }
             },
@@ -297,31 +297,31 @@
               "items": {
                 "removed_mean": {
                   "kind": "json",
-                  "value": 0.001415913044372654
+                  "value": -0.0028231876677038076
                 },
                 "kept_mean": {
                   "kind": "json",
-                  "value": 0.02649015017448027
+                  "value": -0.05254324403076351
                 },
                 "removed_std": {
                   "kind": "json",
-                  "value": 0.17202917914051666
+                  "value": 0.34350790609871873
                 },
                 "kept_std": {
                   "kind": "json",
-                  "value": 0.28445214345589837
+                  "value": 0.5676662853882694
                 },
                 "cohens_d": {
                   "kind": "json",
-                  "value": -0.10751913333658648
+                  "value": 0.10659806437717761
                 },
                 "p_value": {
                   "kind": "json",
-                  "value": 3.287781026630547e-24
+                  "value": 7.769111228852845e-24
                 },
                 "relative_difference": {
                   "kind": "json",
-                  "value": 94.65494519643495
+                  "value": 94.62692545962548
                 },
                 "is_significant": {
                   "kind": "json",
@@ -329,7 +329,7 @@
                 },
                 "t_statistic": {
                   "kind": "json",
-                  "value": -10.158155431899495
+                  "value": 10.073713049695096
                 }
               }
             },
@@ -338,31 +338,31 @@
               "items": {
                 "removed_mean": {
                   "kind": "json",
-                  "value": -0.004575943088148532
+                  "value": 0.00882782074878033
                 },
                 "kept_mean": {
                   "kind": "json",
-                  "value": -0.04102585286717254
+                  "value": 0.08174393282582283
                 },
                 "removed_std": {
                   "kind": "json",
-                  "value": 0.2504745439191928
+                  "value": 0.5009652390756424
                 },
                 "kept_std": {
                   "kind": "json",
-                  "value": 0.30367003629127537
+                  "value": 0.6064596561851026
                 },
                 "cohens_d": {
                   "kind": "json",
-                  "value": 0.13137516850870457
+                  "value": -0.13140479949285316
                 },
                 "p_value": {
                   "kind": "json",
-                  "value": 2.6597016196670514e-35
+                  "value": 2.469088330457061e-35
                 },
                 "relative_difference": {
                   "kind": "json",
-                  "value": 88.84619631683503
+                  "value": 89.20064102177425
                 },
                 "is_significant": {
                   "kind": "json",
@@ -370,7 +370,7 @@
                 },
                 "t_statistic": {
                   "kind": "json",
-                  "value": 12.412017658528656
+                  "value": -12.417995121937045
                 }
               }
             },
@@ -379,31 +379,31 @@
               "items": {
                 "removed_mean": {
                   "kind": "json",
-                  "value": 0.005365465484601303
+                  "value": -0.011246915121488905
                 },
                 "kept_mean": {
                   "kind": "json",
-                  "value": -0.010388600792531965
+                  "value": 0.021039508181452997
                 },
                 "removed_std": {
                   "kind": "json",
-                  "value": 0.2581756540333624
+                  "value": 0.5160964096628778
                 },
                 "kept_std": {
                   "kind": "json",
-                  "value": 0.29434335462386124
+                  "value": 0.5882957665142844
                 },
                 "cohens_d": {
                   "kind": "json",
-                  "value": 0.0570304201526971
+                  "value": -0.058440344359169186
                 },
                 "p_value": {
                   "kind": "json",
-                  "value": 7.165579289518894e-08
+                  "value": 3.361106708809189e-08
                 },
                 "relative_difference": {
                   "kind": "json",
-                  "value": 151.6476240809866
+                  "value": 153.45616933861325
                 },
                 "is_significant": {
                   "kind": "json",
@@ -411,7 +411,7 @@
                 },
                 "t_statistic": {
                   "kind": "json",
-                  "value": 5.388100278339007
+                  "value": -5.5227199765709765
                 }
               }
             }
@@ -423,7 +423,7 @@
             "joshua_selected": {
               "kind": "json",
               "value": [
-                "Volume",
+                "VoxelCount",
                 "L11",
                 "L22",
                 "L33",
@@ -435,7 +435,7 @@
             "significant_features": {
               "kind": "json",
               "value": [
-                "Volume",
+                "VoxelCount",
                 "L11",
                 "L22",
                 "L33"
@@ -443,7 +443,11 @@
             },
             "high_effect_features": {
               "kind": "json",
-              "value": []
+              "value": [
+                "L11",
+                "L22",
+                "L33"
+              ]
             }
           }
         },
@@ -468,34 +472,34 @@
     "resolution_aware_engineer": {
       "kind": "engineer",
       "is_fitted": true,
-      "current_voxel_size_mm": 0.03,
+      "current_voxel_size_mm": null,
       "scaler": {
         "mean": [
-          0.06923703703703706,
-          3.3927677891953714,
-          -1.0965325519188658,
-          -1.0543857027730155,
-          5.556166295522862,
-          2.402610805942685,
-          4.393583992308917
+          2250.220107520511,
+          4.648543768480848,
+          4.668983452648669,
+          5.137874969169222,
+          -0.027057976925322753,
+          0.04436894316361629,
+          0.004490288772962257
         ],
         "scale": [
-          0.034105489543614566,
-          2.621852198955689,
-          4.847325743932531,
-          4.816903971017095,
-          3.153688676889214,
-          2.0052462860932234,
-          3.102616530546266
+          17897.0185413911,
+          1.6083971427342394,
+          1.5335052721664715,
+          1.808655253092903,
+          0.4670740973369971,
+          0.5560770255899649,
+          0.5526882584796267
         ],
         "var": [
-          0.0011631844170096027,
-          6.874108953168781,
-          23.496566867791064,
-          23.20256386600026,
-          9.94575227073924,
-          4.021012667890666,
-          9.626229335618948
+          320303272.6708967,
+          2.586941368755665,
+          2.3516384197623634,
+          3.2712338245405532,
+          0.21815821240317068,
+          0.3092216583889824,
+          0.30546431106124267
         ],
         "n_features_in": 7,
         "feature_names_in": [
@@ -507,7 +511,7 @@
           "sqrt2_L13",
           "sqrt2_L23"
         ],
-        "n_samples_seen": 5
+        "n_samples_seen": 35745.0
       }
     }
   }

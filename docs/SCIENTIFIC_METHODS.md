@@ -242,7 +242,7 @@ grid is divided by 3 to report multiples of uniform density (m.u.d.). The
 complete base grids, contour levels, retained counts, settings, and input hash
 are exported with the figure.
 
-The corrected panels use inclusive retention at 50 and 204 voxels. A regression
+The corrected panels use inclusive retention at 50 and 154 voxels. A regression
 test reproduces the printed raw-grid extrema of the superseded figure and shows
 that its old loose and strict panels used 75 and 145 voxels, respectively.
 
