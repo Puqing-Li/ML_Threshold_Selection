@@ -5,13 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [1.3.0] - 2026-07-24
+## [1.3.0] - 2026-07-25
 
 ### Added
 - Audited five-sample retraining tables and `training_config.csv`
 - Explicit v1.3 feature-schema marker in saved model bundles
+- Released classifier in `trained model/`, carrying the
+  `resolution_aware_v2_per_sample_sqrt5` schema, so the reported thresholds can
+  be reproduced without retraining
+- Analysis scripts that produce the reported figures and validation tables:
+  `generate_main_figures.py`, `generate_fig1_stereonets.py`,
+  `axis_locking_validation.py`, `loso_threshold_validation.py`,
+  `generate_cross_sample_threshold_audit.py`, `threshold_sensitivity_analysis.py`,
+  `training_axis_locking_audit.py` and `rebuild_revision_results.py`. They were
+  named in the documentation but not tracked, and two tracked test modules
+  imported them, so the suite did not collect on a clean clone
+- Per-grain tables for the four additional samples of Fig 5 in `examples/`
+  (12RH26, BG02-4B, BG04-44B, CC10-18), with their voxel sizes and thresholds
+- **0. Prepare Raw Data** in the main window, which opens `tools/BatchFile.py`
+  in its own process
 - Regression tests for per-sample voxel sizes, physical-volume labels,
-  equivalent-ellipsoid semiaxes, P', strict thresholds, and model persistence
+  equivalent-ellipsoid semiaxes, P', strict thresholds, model persistence, the
+  prefilter conditions, load-time validation, single-colour plotting, and the
+  application attributes each module reads
 
 ### Changed
 - Training and prediction now require each sample's measured voxel-edge length;
@@ -28,9 +44,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Bundles carrying a pre-v1.3 feature schema are rejected by the active loader
 - Documentation now distinguishes training diagnostics from independent
   physical-artifact validation
+- `rebuild_revision_results.py` loads the released bundle by default and returns
+  the reported LE01 thresholds, 50 and 154 voxels. Refitting is available through
+  `--retrain` and returns 204 voxels for the strict threshold, because that
+  threshold is the largest object whose artifact probability still exceeds 0.01
+  and therefore a maximum over the fitted model's low-probability tail
+- `cross_validation.py` applies the balanced class weighting that
+  `training_pipeline.py` uses, so the evaluation and the training pipeline fit
+  the same classifier. Leave-one-sample-out AUC is 0.906 to 0.996 and the pooled
+  five-fold value is 0.989; the reported range is unchanged
+- Probability-versus-volume points are drawn in one colour, with no colour bar,
+  matching Fig 3 of the article. Shading them by artifact probability repeated
+  the vertical axis
+- The documentation states that no classifier ships only where that is true:
+  models trained locally go to `models/`, which is empty in a fresh clone
+
+### Fixed
+- The prefilter in `tools/BatchFile.py` also removes objects with
+  `Anisotropy == 1`, which marks a vanishing shortest axis. Those objects pass
+  the positivity test, their smallest eigenvalue underflowing to about 1e-25
+  rather than to exactly zero, but the fabric calculation takes the logarithm of
+  each eigenvalue. Without this condition the prefilter did not reproduce the
+  deposited per-grain tables
+- Loading validates eigenvalues, so a raw Avizo export is refused when it is
+  read rather than accepted and then failing inside the feature builder several
+  steps later
+- `ui_visualization.py` and `analysis_pipeline.py` read `app.voxel_sizes`, which
+  is never assigned; the attribute is `app.training_voxel_sizes`. In the
+  prediction visualization the resulting `AttributeError` left an empty window,
+  because the window was created before the line that failed
+- Failures in the prediction visualization are reported in the log instead of
+  going to the Tk callback handler
+- The released bundle manifest no longer carries the training machine's absolute
+  paths
+- Tracked reference outputs in `outputs/` are regenerated at 50 and 154 voxels
+  with the corrected P'
 
 ### Removed
 - Unsupported claims of expert-free or independently validated thresholding
+- `outputs/Prob_vs_Vol_example.*`, which predates this release and can only be
+  exported from the interface
 ## [1.2.0] - 2026-07-02
 
 ### Added
