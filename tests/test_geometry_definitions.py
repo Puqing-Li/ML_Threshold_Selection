@@ -7,6 +7,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
 sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
 
 from features.res_aware_feature_engineering import ResolutionAwareFeatureEngineer
 from features.ellipsoid_feature_engineering import JoshuaFeatureEngineerFixed

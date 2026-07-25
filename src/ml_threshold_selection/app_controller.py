@@ -1012,9 +1012,9 @@ class FixedMLGUI:
             except FileNotFoundError:
                 # A fresh clone has no locally trained model. Fall back to the
                 # released reference bundle, which training never overwrites.
-                _released_dir = str(_root / 'trained model')
+                _released_dir = str(_root / 'released_model')
                 model_data = persist_load_last(_released_dir)
-                self.log("Loaded the released reference model from 'trained model'")
+                self.log("Loaded the released reference model from 'released_model'")
             schema_version = model_data.get('feature_schema_version')
             if schema_version != FEATURE_SCHEMA_VERSION:
                 raise ValueError(

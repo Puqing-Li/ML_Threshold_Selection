@@ -6,7 +6,7 @@ import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MODULE_PATH = ROOT / "generate_fig1_stereonets.py"
+MODULE_PATH = ROOT / "scripts" / "generate_fig1_stereonets.py"
 SPEC = importlib.util.spec_from_file_location("generate_fig1_stereonets", MODULE_PATH)
 FIG1 = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None

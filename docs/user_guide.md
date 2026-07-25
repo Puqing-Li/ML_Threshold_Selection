@@ -1,6 +1,6 @@
 # User Guide
 
-This guide describes the v1.3.0 resolution-aware GUI workflow.
+This guide describes the v1.3.1 resolution-aware GUI workflow.
 
 ## Install and launch
 
@@ -12,7 +12,7 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-The released classifier ships in `trained model/`. Use **Load Last Model** to
+The released classifier ships in `released_model/`. Use **Load Last Model** to
 load it, or train your own model, before loading test data.
 
 ## Required object-table columns
@@ -104,7 +104,7 @@ reported analysis.
 The supplied five-sample evaluation can be rerun with:
 
 ```bash
-python cross_validation.py \
+python scripts/cross_validation.py \
   --data training_data \
   --config training_data/training_config.csv \
   --out outputs/S3_validation

@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 
 
-MODULE_PATH = Path(__file__).resolve().parents[1] / "generate_main_figures.py"
+MODULE_PATH = Path(__file__).resolve().parents[1] / "scripts" / "generate_main_figures.py"
 SPEC = importlib.util.spec_from_file_location("generate_main_figures", MODULE_PATH)
 FIGURES = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None

@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.1] - 2026-07-26
+
+Repository layout only. No change to the analysis, the released classifier, or
+any reported number.
+
+### Changed
+- The nine command-line analysis scripts moved from the repository root into
+  `scripts/`, with a `scripts/README.md` describing what each one produces.
+  Run them from the repository root, as before.
+- `trained model/` is now `released_model/`. The old name contained a space,
+  which made every documented path awkward to quote, and it was easily confused
+  with `models/`, where locally trained bundles are written.
+
+### Removed
+- The five `total<SampleID>.xlsx` tables and `voxel_sizes.xlsx` that were
+  duplicated in `trained model/`. They were byte-identical to the copies in
+  `training_data/`, which the README already named as authoritative, and the
+  portable bundle records the training matrix it was fitted on.
+
 ## [1.3.0] - 2026-07-25
 
 ### Added

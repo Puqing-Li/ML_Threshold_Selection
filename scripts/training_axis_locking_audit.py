@@ -3,7 +3,10 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np
 import pandas as pd
@@ -18,7 +21,7 @@ def run(repo: Path, angle_degrees: float = 5.0) -> pd.DataFrame:
     loso = run_loso_validation(repo).set_index("Sample")
     rows = []
     for sample_id, metadata in config.items():
-        table = _read_table(repo / "trained model" / f"total{sample_id}.xlsx")
+        table = _read_table(repo / "training_data" / f"total{sample_id}.xlsx")
         volumes_mm3 = table[VOL].to_numpy(float)
         voxel_volume = metadata["vox"] ** 3
         aligned = _axis_distance_degrees(table, 3) <= angle_degrees
@@ -57,7 +60,7 @@ def run(repo: Path, angle_degrees: float = 5.0) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    repository = Path(__file__).resolve().parent
+    repository = Path(__file__).resolve().parents[1]
     result = run(repository)
     output = repository / "outputs" / "training_axis_locking_audit.csv"
     output.parent.mkdir(exist_ok=True)

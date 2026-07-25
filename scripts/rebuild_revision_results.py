@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 
 from features.res_aware_feature_engineering import ResolutionAwareFeatureEngineer
@@ -216,11 +216,11 @@ def run(args):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=Path, default=ROOT / 'examples' / 'expert_thresholds.csv')
-    parser.add_argument('--training-data', type=Path, default=ROOT / 'trained model')
+    parser.add_argument('--training-data', type=Path, default=ROOT / 'training_data')
     parser.add_argument('--test-data', type=Path, default=ROOT / 'examples' / 'Quantity_LE01.xlsx')
     parser.add_argument('--sample-id', default='LE01')
     parser.add_argument('--voxel-size-mm', type=float, default=0.03)
-    parser.add_argument('--model-dir', type=Path, default=ROOT / 'trained model',
+    parser.add_argument('--model-dir', type=Path, default=ROOT / 'released_model',
                         help='directory holding the released model bundle')
     parser.add_argument('--retrain', action='store_true',
                         help='refit the classifier instead of loading the released '

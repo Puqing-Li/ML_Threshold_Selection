@@ -1,16 +1,23 @@
-# ML Threshold Selection v1.3.0
+# ML Threshold Selection v1.3.1
 
 Machine-learning-assisted selection of the minimum object-volume threshold
 (`Vmin`) for XRCT particle analysis. The application trains a classifier from
 expert-labelled samples, applies sample-specific scan resolution during feature
 construction, and computes 3D mean-fabric, P' and T after filtering.
 
-The released classifier used for the reported results ships in `trained model/`
+The released classifier used for the reported results ships in `released_model/`
 and carries the current `resolution_aware_v2_per_sample_sqrt5` feature schema.
 **Load Last Model** uses it when no locally trained model is present. You can
 also train a new model from the supplied five tables or from your own
 expert-labelled samples; training writes to `models/` and never overwrites the
 released bundle.
+
+## What changed in v1.3.1
+
+Layout only. The command-line scripts moved into `scripts/`, the released
+classifier moved from `trained model/` to `released_model/`, and the training
+tables it duplicated were dropped in favour of the copies in `training_data/`.
+No analysis, model or reported number changes.
 
 ## What changed in v1.3.0
 
@@ -32,13 +39,17 @@ released bundle.
 
 | Content | Location |
 |---|---|
+| Application entry point | `main.py` |
+| Application source | `src/ml_threshold_selection/` |
+| Scripts reproducing the published results | `scripts/` |
+| Released classifier used for the reported results | `released_model/` |
+| Model bundles you train yourself | `models/` |
 | Five training tables and authoritative input values | `training_data/` |
-| Generated model bundles | `models/` |
-| Generated tables, reports and figures | `outputs/` |
 | Worked input and TomoFab-format examples | `examples/` |
+| Generated tables, reports and figures | `outputs/` |
+| Avizo conversion utilities | `tools/` |
 | Scientific definitions | `docs/SCIENTIFIC_METHODS.md` |
 | Detailed GUI guide | `docs/user_guide.md` |
-| Avizo conversion utilities | `tools/` |
 | Tests | `tests/` |
 
 ## Installation
@@ -146,7 +157,7 @@ creates TomoFab-compatible tables.
 After reviewing the intended endpoint, run the object-level script with:
 
 ```bash
-python cross_validation.py \
+python scripts/cross_validation.py \
   --data training_data \
   --config training_data/training_config.csv \
   --out outputs/S3_validation

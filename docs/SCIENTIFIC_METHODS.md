@@ -8,16 +8,16 @@ authoritative executable paths are:
 - `src/ml_threshold_selection/training_pipeline.py`
 - `src/ml_threshold_selection/prediction_analysis.py`
 - `src/ml_threshold_selection/fabric_bootstrap.py`
-- `cross_validation.py`
-- `rebuild_revision_results.py`
+- `scripts/cross_validation.py`
+- `scripts/rebuild_revision_results.py`
 
 Historical exploratory classes remain for compatibility but are not the paper
 pipeline unless this document explicitly names them.
 
 ## Reproducing the reported thresholds
 
-`rebuild_revision_results.py` loads the released model bundle from
-`trained model/` and reproduces the reported LE01 thresholds exactly: loose
+`scripts/rebuild_revision_results.py` loads the released model bundle from
+`released_model/` and reproduces the reported LE01 thresholds exactly: loose
 50 voxels (1.350000e-03 mm3, 2212 grains retained) and strict 154 voxels
 (4.158000e-03 mm3, 1074 grains retained).
 
@@ -257,7 +257,7 @@ does not identify the physical truth of every object.
 
 ## Fig 1 orientation-density calculation
 
-`generate_fig1_stereonets.py` plots the three exported Avizo principal axes as
+`scripts/generate_fig1_stereonets.py` plots the three exported Avizo principal axes as
 unoriented axial data on lower-hemisphere equal-area Schmidt nets. Antipodal
 directions are combined through `abs(dot(u, v))`. Density follows the modified
 Kamb calculation used in TomoFab `DataDens.m`, locked to commit

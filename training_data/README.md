@@ -2,7 +2,7 @@
 
 This directory contains the five per-object tables used to train a new model.
 The classifier trained from these tables for the reported results is released in
-`trained model/`.
+`released_model/`.
 
 `training_config.csv` is the authoritative input sheet for manual entry in the
 GUI. `VoxelSize_mm` is the measured voxel edge length for each scan and

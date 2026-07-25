@@ -114,7 +114,7 @@ def run(args):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=Path, default=Path('examples/expert_thresholds.csv'))
-    parser.add_argument('--training-data', type=Path, default=Path('trained model'))
+    parser.add_argument('--training-data', type=Path, default=Path('training_data'))
     parser.add_argument('--test-data', type=Path, default=Path('examples/Quantity_LE01.xlsx'))
     parser.add_argument('--sample-id', default='LE01')
     parser.add_argument('--voxel-size-mm', type=float, default=0.03)

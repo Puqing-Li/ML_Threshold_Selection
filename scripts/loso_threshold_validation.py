@@ -3,7 +3,10 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np
 import pandas as pd
@@ -56,7 +59,7 @@ def project_decisions_to_vmin(voxel_counts: np.ndarray, decisions: np.ndarray) -
 
 def run(repo: Path) -> pd.DataFrame:
     config = cv.load_config(repo / "examples" / "expert_thresholds.csv")
-    samples = cv.load_samples(repo / "trained model", config)
+    samples = cv.load_samples(repo / "training_data", config)
     prototype, _ = cv.make_classifier()
     rows = []
 
@@ -132,7 +135,7 @@ def run(repo: Path) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    repository = Path(__file__).resolve().parent
+    repository = Path(__file__).resolve().parents[1]
     result = run(repository)
     output = repository / "outputs" / "loso_threshold_validation.csv"
     output.parent.mkdir(exist_ok=True)

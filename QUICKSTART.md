@@ -1,7 +1,7 @@
 # Quick Start
 
-This project ships the released classifier in `trained model/` together with the
-training data. A first session can either load that model directly through
+This project ships the released classifier in `released_model/` together with
+the training data in `training_data/`. A first session can either load that model directly through
 **Load Last Model** or start from training.
 
 ## Windows

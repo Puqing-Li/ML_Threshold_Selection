@@ -3,7 +3,10 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import matplotlib
 
@@ -75,7 +78,7 @@ def build(repo: Path, output_stem: Path, n_bootstrap: int = 1000) -> pd.DataFram
 
     for sample_index, sample_id in enumerate(sample_ids):
         metadata = config[sample_id]
-        table = _read_table(repo / "trained model" / f"total{sample_id}.xlsx")
+        table = _read_table(repo / "training_data" / f"total{sample_id}.xlsx")
         voxel_volume = metadata["vox"] ** 3
         voxel_count = table[VOL].to_numpy(float) / voxel_volume
         aligned = _axis_distance_degrees(table, 3) <= 5.0
@@ -271,7 +274,7 @@ def _plot(
 
 
 if __name__ == "__main__":
-    repository = Path(__file__).resolve().parent
+    repository = Path(__file__).resolve().parents[1]
     stem = repository / "outputs" / "cross_sample_threshold_audit"
     frame = build(repository, stem)
     with pd.option_context("display.max_columns", None, "display.width", 260):
