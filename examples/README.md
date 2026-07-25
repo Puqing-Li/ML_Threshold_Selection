@@ -60,6 +60,16 @@ Apply a threshold as a volume: `Vmin_mm3 = Vmin_vox * voxel_mm ** 3`. Use the
 voxel count rather than the rounded millimetre value, because rounding the
 threshold changes which objects are retained.
 
+Enter each sample's own voxel size. Using another sample's value rescales every
+feature and silently produces the wrong threshold.
+
+These tables, like `Quantity_LE01.xlsx`, are the prefiltered inputs used for the
+article. A raw Avizo Label-Analysis export is not interchangeable with them: it
+still contains objects whose fitted ellipsoid is degenerate, with a zero or
+non-finite eigenvalue, and the feature builder rejects those with
+`EigenVal1-3 must be finite and strictly positive`. That error means a raw export
+was loaded, not that the analysis failed.
+
 These four samples were provided by collaborators; see the article's
 acknowledgements and sample-provenance statement.
 
