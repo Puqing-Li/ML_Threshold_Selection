@@ -11,6 +11,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+# Objects on the probability-versus-volume plot are drawn in one colour, as in
+# Fig 3 of the article. Shading them by artifact probability repeated the
+# vertical axis and invited that colour to be read as a second variable.
+SCATTER_GREY = "#808080"
+
 
 def save_chart(fig, base_name, format_type, log_func):
     from datetime import datetime
@@ -62,8 +67,11 @@ def export_publication_fig3(app):
     # Convert from volume to exact V_min in mm³
     v_min_mm3 = volumes
     
-    # 2. Scatter plot with plasma colormap (yellow highest, purple lowest)
-    scatter = ax1.scatter(v_min_mm3, app.probabilities, c=app.probabilities, cmap='plasma_r', alpha=0.3, s=12, edgecolors='none')
+    # Single colour, matching Fig 3 of the article. The points were once shaded
+    # by artifact probability, which the vertical axis already carries, so the
+    # colour scale duplicated that axis and could be read as a second variable.
+    ax1.scatter(v_min_mm3, app.probabilities, color=SCATTER_GREY,
+                alpha=0.35, s=12, edgecolors='none')
     
     # Setup ax1
     ax1.set_xscale('log')
@@ -107,10 +115,8 @@ def export_publication_fig3(app):
         
     ax1.legend(handles=lines, loc='lower left', frameon=False)
     
-    # Colorbar on ax1
-    cbar = fig.colorbar(scatter, ax=ax1, pad=0.08, shrink=0.7)
-    cbar.set_label('Below-threshold class probability', rotation=90, labelpad=15, color='darkred')
-    
+    # No colour bar: the points carry no colour variable.
+
     # Frame styling
     for spine in ['bottom', 'left']:
          ax1.spines[spine].set_linewidth(1.5)
@@ -280,7 +286,8 @@ def show_prediction_visualization(app):
         'lines.linewidth': 2.0
     })
     v_min_mm3 = volumes
-    scatter = axes[0, 1].scatter(v_min_mm3, app.probabilities, c=app.probabilities, cmap='plasma_r', alpha=0.3, s=15, edgecolors='none')
+    axes[0, 1].scatter(v_min_mm3, app.probabilities, color=SCATTER_GREY,
+                       alpha=0.35, s=15, edgecolors='none')
     
     axes[0, 1].set_xscale('log')
     # Set explicit font sizes for the top-right subplot
@@ -323,8 +330,7 @@ def show_prediction_visualization(app):
         
     axes[0, 1].legend(handles=lines_01, loc='lower left', frameon=False, fontsize=8)
     
-    cbar = fig.colorbar(scatter, ax=axes[0, 1], pad=0.08, shrink=0.7)
-    cbar.set_label('Below-threshold class probability', rotation=90, labelpad=15, color='darkred')
+    # No colour bar: the points carry no colour variable.
 
     for spine in ['bottom', 'left']:
          axes[0, 1].spines[spine].set_linewidth(1.5)
