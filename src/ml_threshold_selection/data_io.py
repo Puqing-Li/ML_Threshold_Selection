@@ -94,6 +94,24 @@ def validate_training_data(app, df: pd.DataFrame) -> bool:
     if missing_cols:
         app.log(f"Missing required columns: {missing_cols}")
         return False
+
+    # Reject a raw export here rather than several steps later. The fabric
+    # calculation takes the logarithm of each eigenvalue, so an object with a
+    # zero, negative or non-finite eigenvalue cannot be used at all.
+    eigenvalues = df[['EigenVal1', 'EigenVal2', 'EigenVal3']].apply(
+        pd.to_numeric, errors='coerce'
+    ).to_numpy(dtype=float)
+    unusable = int((~np.isfinite(eigenvalues)).any(axis=1).sum()
+                   + (eigenvalues <= 0).any(axis=1).sum())
+    if unusable:
+        app.log(
+            f"{unusable} of {len(df)} objects have a missing, non-finite, zero or "
+            "negative EigenVal1-3 and cannot be used"
+        )
+        app.log("   This is a raw Avizo Label-Analysis export")
+        app.log("   Prepare it with '0. Prepare Raw Data', then load the table it writes")
+        return False
+
     app.log(f"Columns: {list(df.columns)}")
     return True
 
@@ -250,8 +268,12 @@ def load_test_data(app):
         return
     if not validate_training_data(app, df):
         messagebox.showerror(
-            "Invalid test data",
-            "The selected file does not contain all required Avizo columns.",
+            "Test data cannot be used",
+            "The selected file is missing a required Avizo column, or it still "
+            "contains objects whose fitted ellipsoid is degenerate.\n\n"
+            "The log window says which. If it is a raw Label-Analysis export, "
+            'prepare it with "0. Prepare Raw Data" and load the table that '
+            "writes.",
             parent=app.root,
         )
         return
