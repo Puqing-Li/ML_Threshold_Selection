@@ -4,9 +4,10 @@
 
 Uses the same seven resolution-aware features as the GUI app: VoxelCount plus six
 log-ellipsoid tensor components, with a LightGBM classifier (RandomForest fallback).
-For every validation split, StandardScaler is fitted on the training samples only
-and applied unchanged to the held-out sample. LightGBM parameters are imported from
-the same canonical configuration used by the analysis pipeline.
+The evaluation mirrors the training pipeline. For every validation split,
+StandardScaler is fitted on the training samples only and applied unchanged to the
+held-out sample, LightGBM parameters are imported from the same canonical
+configuration used by the analysis pipeline, and class weighting is balanced.
 
 Pseudo-label = below the expert volume threshold (expert-threshold labelling,
 identical to the app's ExpertThresholdProcessor). Because the pseudo-label is
@@ -58,7 +59,7 @@ def make_classifier():
     try:
         import lightgbm as lgb
         return lgb.LGBMClassifier(
-            **lightgbm_parameters(SEED), n_estimators=100
+            **lightgbm_parameters(SEED), n_estimators=100, class_weight="balanced"
         ), "LightGBM"
     except Exception:
         from sklearn.ensemble import RandomForestClassifier

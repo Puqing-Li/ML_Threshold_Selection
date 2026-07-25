@@ -112,16 +112,24 @@ model used for the reported results.
 
 ## Evaluation scope
 
-Leave-one-sample-out evaluation holds out each complete training sample. Feature
-standardization is fitted within each training fold. Corrected AUC values are:
+Leave-one-sample-out evaluation holds out each complete training sample. The
+evaluation mirrors the training pipeline: feature standardization is fitted
+within each training fold and applied unchanged to the held-out sample, the
+classifier uses the same LightGBM parameters as `training_pipeline.py`, and
+class weighting is balanced. AUC values are:
 
 | Held-out sample | AUC |
 |---|---:|
-| AKAN20 | 0.992 |
-| ANA16937 | 0.997 |
-| HL19335 | 0.989 |
-| LE03 | 0.995 |
-| LE19 | 0.910 |
+| AKAN20 | 0.984 |
+| ANA16937 | 0.995 |
+| HL19335 | 0.988 |
+| LE03 | 0.996 |
+| LE19 | 0.906 |
+
+Pooled stratified five-fold AUC is 0.989 over all 35,745 objects. The reported
+range is not sensitive to these implementation choices: omitting the fold-wise
+scaler, or dropping the balanced class weighting, moves individual values by at
+most 0.008 and leaves every sample above 0.90.
 
 These values measure object ranking against the expert volume-derived
 pseudo-label rule. They are not independent estimates of physical
