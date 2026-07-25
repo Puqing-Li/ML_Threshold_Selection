@@ -967,8 +967,16 @@ class FixedMLGUI:
     def load_last_time_model(self):
         try:
             from pathlib import Path as _Path
-            _models_dir = str(_Path(__file__).resolve().parents[2] / 'models')
-            model_data = persist_load_last(_models_dir)
+            _root = _Path(__file__).resolve().parents[2]
+            _models_dir = str(_root / 'models')
+            try:
+                model_data = persist_load_last(_models_dir)
+            except FileNotFoundError:
+                # A fresh clone has no locally trained model. Fall back to the
+                # released reference bundle, which training never overwrites.
+                _released_dir = str(_root / 'trained model')
+                model_data = persist_load_last(_released_dir)
+                self.log("Loaded the released reference model from 'trained model'")
             schema_version = model_data.get('feature_schema_version')
             if schema_version != FEATURE_SCHEMA_VERSION:
                 raise ValueError(

@@ -1,11 +1,14 @@
 # Models
 
-This directory intentionally contains no classifier.
+This directory holds models you train locally. It is empty in a fresh clone.
 
 After training through the GUI, the application writes a schema-marked v2
-portable bundle and a same-environment pickle here. **Load Last Model** becomes
-available only after that training has completed successfully.
+portable bundle and a same-environment pickle here, and **Load Last Model**
+then reads them from this directory.
 
-Generated model files are ignored by Git. A release model should be added only
-after its training inputs, feature schema, and practical TomoFab checks have
-been frozen.
+The released reference classifier is not stored here. It ships in
+`trained model/`, and **Load Last Model** falls back to it whenever this
+directory contains no locally trained model, so training never overwrites the
+released bundle.
+
+Generated model files are ignored by Git.

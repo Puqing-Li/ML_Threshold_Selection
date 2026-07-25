@@ -1,33 +1,33 @@
-At threshold 2.025000e-03 mm³ for sample LE01:
+At threshold 1.350000e-03 mm³ for sample LE01:
 Threshold Type: Loose
 ============================================================
 
 Mean Ellipsoid Matrix (meanEll):
 [
-  [ 5.22896042e-03, -4.36675851e-04, -1.23243371e-04 ],
-  [ -4.36675851e-04, 4.80863405e-03, 3.94744333e-04 ],
-  [ -1.23243371e-04, 3.94744333e-04, 4.05392377e-03 ]
+  [ 1.39883339e-01, -5.01277158e-03, -1.64502859e-03 ],
+  [ -5.01277158e-03, 1.34137750e-01, 4.96889744e-03 ],
+  [ -1.64502859e-03, 4.96889744e-03, 1.20710254e-01 ]
 ]
 
 V matrix (eigenvectors):
 [
-  [ 0.79695350  0.60195768  0.05012046 ]
-  [ -0.56567633  0.71466357  0.41141987 ]
-  [ -0.21183808  0.35623446  -0.91006684 ]
+  [ 0.82544243  0.56448621  0.00040670 ]
+  [ -0.53616619  0.78380460  0.31333080 ]
+  [ -0.17655213  0.25885457  -0.94964397 ]
 ]
 
 D matrix (Eigenvalues - diagonal matrix):
 [
-  [ 5.57167176e-03, 0.00000000e+00, 0.00000000e+00 ],
-  [ 0.00000000e+00, 4.63759014e-03, 0.00000000e+00 ],
-  [ 0.00000000e+00, 0.00000000e+00, 3.88225657e-03 ]
+  [ 1.43491238e-01, 0.00000000e+00, 0.00000000e+00 ],
+  [ 0.00000000e+00, 1.32168606e-01, 0.00000000e+00 ],
+  [ 0.00000000e+00, 0.00000000e+00, 1.19071491e-01 ]
 ]
 
-Number of particles (spinels): 1726
-T: -0.015838162495201535
-P': 1.4365887956203955
+Number of particles (spinels): 2212
+T: 0.11878213739964819
+P': 1.2056128926416685
 
 ============================================================
 Notes:
 - V matrix: Each COLUMN is an eigenvector (principal axis). Column 0=Eigen1, Column 1=Eigen2, Column 2=Eigen3
-- For Avizo Clipping Plane: Foliation plane uses Eigen1 (col 0) and Eigen2 (col 1); Kinematic plane uses Eigen1 (col 0) and Eigen3 (col 2)
+- Principal-axis labels are geometric. Assign geological meanings only from independent sample and microstructural evidence.

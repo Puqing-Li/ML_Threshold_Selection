@@ -1,6 +1,6 @@
 # Examples and reference data
 
-## `expert_thresholds.csv` — expert reference thresholds
+## `expert_thresholds.csv`: expert reference thresholds
 
 One row per training sample: `SampleID, ExpertThreshold_mm3, VoxelSize_mm`.
 
@@ -30,7 +30,7 @@ The corresponding per-grain tables (`total<Sample>.xlsx`) ship in the
 `training_data/` folder; the voxel sizes and expert thresholds are recorded in
 `training_data/training_config.csv`.
 
-## `Quantity_LE01.xlsx` — worked-example input
+## `Quantity_LE01.xlsx`: worked-example input
 
 Per-grain morphometric table for sample LE01 (lherzolite, Mount Leura), the
 worked example of the article (Figs 1, 3, 4). This is a legacy table produced
@@ -42,7 +42,7 @@ available in this repository. Load it in the GUI via
 outputs (`LE01_Loose_MeanFabric.txt`, `LE01_Strict_MeanFabric.txt`) are in
 the `outputs/` folder.
 
-## `TT_totalLE19.xls` — example TomoFab input
+## `TT_totalLE19.xls`: example TomoFab input
 
 Shows exactly what a TomoFab-ready file looks like (protocol Step 51.2,
 Option B): tab-separated, with the TomoFab header schema (`Number`,

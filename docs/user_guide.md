@@ -12,8 +12,8 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-The repository intentionally contains no released classifier. Train a model
-before loading test data.
+The released classifier ships in `trained model/`. Use **Load Last Model** to
+load it, or train your own model, before loading test data.
 
 ## Required object-table columns
 

@@ -1,7 +1,8 @@
 # Quick Start
 
-This project contains training data but no pre-trained classifier. The first
-session therefore starts with training.
+This project ships the released classifier in `trained model/` together with the
+training data. A first session can either load that model directly through
+**Load Last Model** or start from training.
 
 ## Windows
 

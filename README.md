@@ -5,8 +5,12 @@ Machine-learning-assisted selection of the minimum object-volume threshold
 expert-labelled samples, applies sample-specific scan resolution during feature
 construction, and computes 3D mean-fabric, P' and T after filtering.
 
-This repository intentionally ships **without a trained model**. Train a new
-model from the supplied five tables or from your own expert-labelled samples.
+The released classifier used for the reported results ships in `trained model/`
+and carries the current `resolution_aware_v2_per_sample_sqrt5` feature schema.
+**Load Last Model** uses it when no locally trained model is present. You can
+also train a new model from the supplied five tables or from your own
+expert-labelled samples; training writes to `models/` and never overwrites the
+released bundle.
 
 ## What changed in v1.3.0
 

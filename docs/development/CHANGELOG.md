@@ -22,13 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Avizo covariance eigenvalues are converted to equivalent-ellipsoid semiaxes
   using `sqrt(5 * EigenVal)`
 - P' and T use the manuscript's mean-log semiaxis definition throughout
-- Generated v1.3 models are written to `models/`; legacy bundles in
-  `trained model/` are rejected by the active loader
+- Locally trained models are written to `models/`; **Load Last Model** reads
+  that directory first and falls back to the released bundle in
+  `trained model/`, so training never overwrites the released model
+- Bundles carrying a pre-v1.3 feature schema are rejected by the active loader
 - Documentation now distinguishes training diagnostics from independent
   physical-artifact validation
 
 ### Removed
-- Shipped active classifier; v1.3 requires retraining before prediction
 - Unsupported claims of expert-free or independently validated thresholding
 ## [1.2.0] - 2026-07-02
 

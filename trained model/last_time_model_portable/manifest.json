@@ -66,11 +66,11 @@
     "training_files": {
       "kind": "json",
       "value": [
-        "D:/research/Github/ML_Threshold_Selection_v2_retrain/training_data/totalAKAN20.xlsx",
-        "D:/research/Github/ML_Threshold_Selection_v2_retrain/training_data/totalANA16937.xlsx",
-        "D:/research/Github/ML_Threshold_Selection_v2_retrain/training_data/totalHL19335.xlsx",
-        "D:/research/Github/ML_Threshold_Selection_v2_retrain/training_data/totalLE03.xlsx",
-        "D:/research/Github/ML_Threshold_Selection_v2_retrain/training_data/totalLE19.xlsx"
+        "totalAKAN20.xlsx",
+        "totalANA16937.xlsx",
+        "totalHL19335.xlsx",
+        "totalLE03.xlsx",
+        "totalLE19.xlsx"
       ]
     },
     "features": {
