@@ -226,6 +226,15 @@ def show_prediction_visualization(app):
     if app.test_data is None or app.probabilities is None:
         app.log("Please perform prediction analysis first")
         return
+    # Check everything the figure needs before opening a window, so a missing
+    # input reports itself instead of leaving an empty one on screen.
+    if getattr(app, 'test_voxel_size_mm', None) is None:
+        app.log("Test voxel size is unavailable; run prediction analysis first")
+        return
+
+    volumes = app.test_data['Volume3d (mm^3) '].values
+    voxel_mm = float(app.test_voxel_size_mm)
+
     if app.visualization_window is not None:
         app.visualization_window.destroy()
     import tkinter as tk
@@ -236,13 +245,6 @@ def show_prediction_visualization(app):
     fig, axes = plt.subplots(2, 2, figsize=(12, 8))
     fig.suptitle('Prediction Results Analysis', fontsize=16, fontweight='bold')
 
-    volumes = app.test_data['Volume3d (mm^3) '].values
-    if not app.voxel_sizes:
-        app.log("Please input voxel sizes first (mm)")
-        return
-    if not hasattr(app, 'test_voxel_size_mm') or app.test_voxel_size_mm is None:
-        raise ValueError('Test voxel size is unavailable; run prediction analysis first')
-    voxel_mm = float(app.test_voxel_size_mm)
     voxel_vol = voxel_mm ** 3
     voxels_cont = np.clip(volumes / voxel_vol, a_min=1e-12, a_max=None)
 

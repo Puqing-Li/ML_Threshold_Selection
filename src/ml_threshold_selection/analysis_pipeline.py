@@ -42,11 +42,11 @@ def run_feature_analysis(app):
             df = df.drop(columns=string_columns)
         labels = df['label'].values
         sample_ids = df['SampleID'].values if 'SampleID' in df.columns else None
-        if not app.voxel_sizes:
+        if not app.training_voxel_sizes:
             app.log("Please input voxel sizes first")
             return
         app.ellipsoid_analysis_results = app.ellipsoid_feature_analyzer.analyze_feature_differences(
-            df, labels, sample_ids, app.voxel_sizes
+            df, labels, sample_ids, app.training_voxel_sizes
         )
         display_feature_analysis_results(app)
         app.log("Feature analysis completed! Generate visualization charts?")

@@ -620,7 +620,20 @@ class FixedMLGUI:
         ui_show_training(self)
 
     def show_prediction_visualization(self):
-        ui_show_prediction(self)
+        try:
+            ui_show_prediction(self)
+        except Exception as e:
+            # Without this the failure goes to the Tk callback handler and the
+            # only thing the user sees is an empty window.
+            import traceback
+            self.log(f"Prediction visualization failed: {e}")
+            self.log(f"Traceback: {traceback.format_exc()}")
+            if getattr(self, 'visualization_window', None) is not None:
+                try:
+                    self.visualization_window.destroy()
+                except Exception:
+                    pass
+                self.visualization_window = None
 
     def save_chart(self, fig, base_name, format_type):
         try:
