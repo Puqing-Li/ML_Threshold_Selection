@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT / 'src'))
 
 from features.res_aware_feature_engineering import ResolutionAwareFeatureEngineer
 from ml_threshold_selection.fabric_pipeline import run_fabric_boxplots
-from ml_threshold_selection.io_persistence import save_portable
+from ml_threshold_selection.io_persistence import load_last, save_portable
 from ml_threshold_selection.labeling import generate_labels_from_thresholds
 from ml_threshold_selection.mean_fabric_calculator import (
     compute_mean_fabric_single,
@@ -24,6 +24,7 @@ from ml_threshold_selection.mean_fabric_calculator import (
 )
 from ml_threshold_selection.prediction_analysis import compute_dual_thresholds
 from ml_threshold_selection.training_pipeline import train_model_pipeline
+from ml_threshold_selection.voxel_config import FEATURE_SCHEMA_VERSION
 
 
 class _Logger:
@@ -107,14 +108,34 @@ def run(args):
     training, thresholds, voxel_sizes, training_files = _load_training(
         args.config, args.training_data
     )
-    engineer = ResolutionAwareFeatureEngineer()
-    model, features, training_results = train_model_pipeline(
-        training_data=training,
-        voxel_sizes=voxel_sizes,
-        resolution_aware_engineer=engineer,
-        lightgbm_available=True,
-        random_seed=args.seed,
-    )
+    if args.retrain:
+        engineer = ResolutionAwareFeatureEngineer()
+        model, features, training_results = train_model_pipeline(
+            training_data=training,
+            voxel_sizes=voxel_sizes,
+            resolution_aware_engineer=engineer,
+            lightgbm_available=True,
+            random_seed=args.seed,
+        )
+        source = 'retrained in this run'
+    else:
+        # Load the released bundle. The strict threshold is the largest object whose
+        # artifact probability still exceeds --strict-probability, so it is a maximum
+        # over the model's low-probability tail and shifts when the model is refitted.
+        # Reproducing the reported thresholds therefore requires the released model.
+        bundle = load_last(str(args.model_dir))
+        schema = bundle.get('feature_schema_version')
+        if schema != FEATURE_SCHEMA_VERSION:
+            raise RuntimeError(
+                f'Model bundle in {args.model_dir} carries feature schema {schema!r}; '
+                f'this code requires {FEATURE_SCHEMA_VERSION!r}'
+            )
+        model = bundle['model']
+        engineer = bundle['resolution_aware_engineer']
+        features = bundle.get('features')
+        training_results = bundle.get('training_results') or {}
+        source = f'released bundle in {args.model_dir}'
+    print(f'model: {source}')
 
     test = _read_table(args.test_data)
     test_features = engineer.extract(test, args.voxel_size_mm, fit_scaler=False)
@@ -155,17 +176,18 @@ def run(args):
         random_seed=args.seed,
     )
 
-    save_portable({
-        'model': model,
-        'training_data': training,
-        'expert_thresholds': thresholds,
-        'voxel_sizes': voxel_sizes,
-        'training_files': training_files,
-        'features': features,
-        'training_results': training_results,
-        'ellipsoid_analysis_results': {},
-        'resolution_aware_engineer': engineer,
-    }, str(args.output))
+    if args.retrain:
+        save_portable({
+            'model': model,
+            'training_data': training,
+            'expert_thresholds': thresholds,
+            'voxel_sizes': voxel_sizes,
+            'training_files': training_files,
+            'features': features,
+            'training_results': training_results,
+            'ellipsoid_analysis_results': {},
+            'resolution_aware_engineer': engineer,
+        }, str(args.output))
 
     summary = {
         'sample_id': args.sample_id,
@@ -175,9 +197,14 @@ def run(args):
         'bootstrap_resamples': args.bootstrap,
         'label_definition': 'expert-defined below-threshold pseudo-label if Volume3d_mm3 < expert threshold_mm3',
         'feature_definition': 'sample-specific VoxelCount plus symmetric dimensionless log-ellipsoid Mandel components (a_ref = 1 mm)',
+        'model_source': source,
         'training_objects': int(len(training)),
-        'training_auc_resubstitution': float(training_results['train_auc']),
-        'training_accuracy_resubstitution': float(training_results['train_accuracy']),
+        'training_auc_resubstitution': (
+            float(training_results['train_auc'])
+            if 'train_auc' in training_results else None),
+        'training_accuracy_resubstitution': (
+            float(training_results['train_accuracy'])
+            if 'train_accuracy' in training_results else None),
         'loose': loose,
         'strict': strict,
     }
@@ -193,6 +220,12 @@ def main():
     parser.add_argument('--test-data', type=Path, default=ROOT / 'examples' / 'Quantity_LE01.xlsx')
     parser.add_argument('--sample-id', default='LE01')
     parser.add_argument('--voxel-size-mm', type=float, default=0.03)
+    parser.add_argument('--model-dir', type=Path, default=ROOT / 'trained model',
+                        help='directory holding the released model bundle')
+    parser.add_argument('--retrain', action='store_true',
+                        help='refit the classifier instead of loading the released '
+                             'bundle; the strict threshold will differ because it is '
+                             'a maximum over the model probability tail')
     parser.add_argument('--strict-probability', type=float, default=0.01)
     parser.add_argument('--bootstrap', type=int, default=1000)
     parser.add_argument('--seed', type=int, default=42)

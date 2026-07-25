@@ -42,6 +42,27 @@ available in this repository. Load it in the GUI via
 outputs (`LE01_Loose_MeanFabric.txt`, `LE01_Strict_MeanFabric.txt`) are in
 the `outputs/` folder.
 
+## `Quantity_12RH26.xlsx`, `Quantity_BG02-4B.xlsx`, `Quantity_BG04-44B.xlsx`, `Quantity_CC10-18.xlsx`
+
+Per-grain morphometric tables for the four additional samples of Fig 5, in the
+same format as `Quantity_LE01.xlsx`. They allow the Fig 5 sweeps and the
+corresponding S4 Table rows to be recomputed. Each carries its own voxel size and
+its own machine-learning thresholds:
+
+| Sample | Locality | Voxel (mm) | Loose (vox) | Strict (vox) |
+|---|---|---:|---:|---:|
+| 12RH26 | Red Hills, New Zealand | 0.041 | 40 | 144 |
+| BG02-4B | New Caledonia | 0.039 | 39 | 145 |
+| BG04-44B | New Caledonia | 0.041 | 14 | 144 |
+| CC10-18 | North Anatolian Fault | 0.074 | 14 | 143 |
+
+Apply a threshold as a volume: `Vmin_mm3 = Vmin_vox * voxel_mm ** 3`. Use the
+voxel count rather than the rounded millimetre value, because rounding the
+threshold changes which objects are retained.
+
+These four samples were provided by collaborators; see the article's
+acknowledgements and sample-provenance statement.
+
 ## `TT_totalLE19.xls`: example TomoFab input
 
 Shows exactly what a TomoFab-ready file looks like (protocol Step 51.2,

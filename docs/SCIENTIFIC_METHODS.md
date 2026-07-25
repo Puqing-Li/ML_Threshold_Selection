@@ -9,9 +9,27 @@ authoritative executable paths are:
 - `src/ml_threshold_selection/prediction_analysis.py`
 - `src/ml_threshold_selection/fabric_bootstrap.py`
 - `cross_validation.py`
+- `rebuild_revision_results.py`
 
 Historical exploratory classes remain for compatibility but are not the paper
 pipeline unless this document explicitly names them.
+
+## Reproducing the reported thresholds
+
+`rebuild_revision_results.py` loads the released model bundle from
+`trained model/` and reproduces the reported LE01 thresholds exactly: loose
+50 voxels (1.350000e-03 mm3, 2212 grains retained) and strict 154 voxels
+(4.158000e-03 mm3, 1074 grains retained).
+
+Passing `--retrain` refits the classifier from `training_data/` instead. The
+loose threshold is unchanged by this, because it is read from the inflection of
+the cumulative artifact-rate curve, which is a stable, aggregate property. The
+strict threshold is not: it is defined as the largest object whose artifact
+probability still exceeds 0.01, so it is a maximum over the low-probability tail
+of the fitted model and moves when the model is refitted. Refitting in this
+environment returns 204 voxels rather than 154 for LE01. The reported strict
+threshold is therefore a property of the released model, and reproducing it
+requires that model rather than a new fit.
 
 ## Input geometry and validity
 
