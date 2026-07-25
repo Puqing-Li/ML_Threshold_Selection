@@ -1,5 +1,6 @@
 cff-version: 1.2.0
-message: "This v1.3.0 candidate is not yet an immutable public release. Cite the repository and exact commit until the v1.3.0 release DOI is published; the historical Zenodo DOI predates these corrections."
+message: "If you use this software, please cite the archived release below. Releases before v1.3.0 predate the correction of P' to the axis-length convention and the resolution-aware retraining."
+doi: "10.5281/zenodo.21561191"
 type: software
 title: "ML Threshold Selection: Expert-Guided Threshold Selection for XRCT Particle Analysis"
 version: 1.3.0
