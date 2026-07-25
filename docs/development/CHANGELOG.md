@@ -23,6 +23,18 @@ any reported number.
   duplicated in `trained model/`. They were byte-identical to the copies in
   `training_data/`, which the README already named as authoritative, and the
   portable bundle records the training matrix it was fitted on.
+- `released_model/last_time_model.pkl`. The loader prefers the portable bundle
+  whenever its manifest is present, and the released bundle always ships one, so
+  no code path could reach the pickle. It also still carried the training
+  machine's absolute paths, which the sibling manifest had been scrubbed of, and
+  it was 26 MB of the tracked tree. The portable bundle is now the only shipped
+  form of the released classifier; `io_persistence` still writes and reads a
+  pickle for models you train yourself.
+- `src/features/ellipsoid_feature_engineering_legacy.py`. Nothing imported it and
+  no document referenced it, and it implemented the pre-audit semiaxis
+  conversion `sqrt(EigenVal)` rather than the corrected `sqrt(5 * EigenVal)`, so
+  a reader could import the superseded form of the quantity this work corrects.
+  Its content remains in the history.
 
 ## [1.3.0] - 2026-07-25
 

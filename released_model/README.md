@@ -3,10 +3,11 @@
 This directory holds the classifier used for the results reported in the
 accompanying manuscript.
 
-`last_time_model_portable/` is the version-portable bundle and
-`last_time_model.pkl` is the same-environment pickle. Both carry the current
-feature schema `resolution_aware_v2_per_sample_sqrt5`, which is the schema the
-v1.3 loader accepts.
+`last_time_model_portable/` holds the classifier in formats that do not depend
+on the library versions or the platform that produced it: the gradient-boosted
+model in LightGBM's own text format, the tables as gzipped CSV, and the arrays
+as `.npy`. It carries the feature schema `resolution_aware_v2_per_sample_sqrt5`,
+which is the schema the v1.3 loader accepts.
 
 **Load Last Model** reads `models/` first and falls back to this directory when
 no locally trained model is present, so a fresh clone can reproduce the reported
