@@ -24,7 +24,15 @@ class ResolutionAwareFeatureEngineer:
     def _compute_joshua_tensor(self, df: pd.DataFrame) -> np.ndarray:
         eigenvals = df[['EigenVal1', 'EigenVal2', 'EigenVal3']].values.astype(float)
         if not np.all(np.isfinite(eigenvals)) or np.any(eigenvals <= 0):
-            raise ValueError('EigenVal1-3 must be finite and strictly positive')
+            bad = int((~np.isfinite(eigenvals)).any(axis=1).sum()
+                      + (eigenvals <= 0).any(axis=1).sum())
+            raise ValueError(
+                f'EigenVal1-3 must be finite and strictly positive, but {bad} of '
+                f'{len(eigenvals)} objects fail this. A raw Avizo Label-Analysis '
+                'export still contains objects whose fitted ellipsoid is '
+                'degenerate. Prepare the table first with "0. Prepare Raw Data" '
+                '(tools/BatchFile.py) and load the resulting table.'
+            )
         eigenvec1 = df[['EigenVec1X', 'EigenVec1Y', 'EigenVec1Z']].values
         eigenvec2 = df[['EigenVec2X', 'EigenVec2Y', 'EigenVec2Z']].values
         eigenvec3 = df[['EigenVec3X', 'EigenVec3Y', 'EigenVec3Z']].values

@@ -59,6 +59,11 @@ application.
 
 The supplied values are recorded in `training_data/training_config.csv`.
 
+Start at step 0 only when working from a raw Avizo Label-Analysis export. The
+tables shipped in `training_data/` and `examples/` are already prepared.
+
+0. Click **0. Prepare Raw Data** to open the preparation tool, which removes
+   objects whose fitted ellipsoid is degenerate and writes an app-format table.
 1. Click **1. Load Training Data** and select all five
    `training_data/total<SampleID>.xlsx` files.
 2. Click **2. Input Expert Thresholds** and enter, in mm3:

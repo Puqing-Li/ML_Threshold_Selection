@@ -963,6 +963,31 @@ class FixedMLGUI:
             import traceback
             self.log(f"Detailed error: {traceback.format_exc()}")
 
+    def prepare_raw_data(self):
+        """Launch the batch prefilter that turns raw Avizo exports into app tables.
+
+        Run as a separate process: the tool builds its own Tk root, and a second
+        mainloop inside this one would not return control.
+        """
+        try:
+            import subprocess
+            import sys as _sys
+            from pathlib import Path as _Path
+            script = _Path(__file__).resolve().parents[2] / 'tools' / 'BatchFile.py'
+            if not script.is_file():
+                raise FileNotFoundError(f'Preparation tool not found at {script}')
+            subprocess.Popen([_sys.executable, str(script)], cwd=str(script.parent))
+            self.log('Opened the raw-data preparation tool in a separate window')
+            self.log('   - It removes objects whose fitted ellipsoid is degenerate')
+            self.log('   - Load the table it writes, not the raw export')
+        except Exception as e:
+            self.log(f'Could not open the preparation tool: {e}')
+            messagebox.showerror(
+                'Preparation tool',
+                f'Could not open the raw-data preparation tool.\n\n{e}\n\n'
+                'You can run it directly: tools/BatchFile.py',
+            )
+
     # Persistence
     def load_last_time_model(self):
         try:

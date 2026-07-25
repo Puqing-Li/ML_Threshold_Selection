@@ -58,15 +58,16 @@ def build_main_ui(app):
     workflow_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 10), pady=(0, 10))
 
     btn_w = 28
-    ttk.Button(workflow_frame, text="1. Load Training Data", width=btn_w, command=app.load_multiple_training_data).grid(row=0, column=0, padx=6, pady=4)
-    ttk.Button(workflow_frame, text="2. Input Expert Thresholds", width=btn_w, command=app.input_expert_thresholds).grid(row=0, column=1, padx=6, pady=4)
-    ttk.Button(workflow_frame, text="3. Input Voxel Sizes", width=btn_w, command=app.input_voxel_sizes).grid(row=1, column=0, padx=6, pady=4)
-    ttk.Button(workflow_frame, text="4. Feature Analysis", width=btn_w, command=app.analyze_ellipsoid_features).grid(row=1, column=1, padx=6, pady=4)
-    ttk.Button(workflow_frame, text="5. Train Model", width=btn_w, command=app.train_model).grid(row=2, column=0, padx=6, pady=4)
-    ttk.Button(workflow_frame, text="6a. Load Single Test Data", width=btn_w, command=app.load_test_data).grid(row=2, column=1, padx=6, pady=4)
-    ttk.Button(workflow_frame, text="6b. Load Multi Test Data", width=btn_w, command=app.load_test_data_multiple).grid(row=3, column=0, padx=6, pady=4)
-    ttk.Button(workflow_frame, text="7. Predict Analysis", width=btn_w, command=app.predict_analysis).grid(row=3, column=1, padx=6, pady=4)
-    ttk.Button(workflow_frame, text="8. Export / Reports", width=btn_w, command=app.export_results).grid(row=4, column=0, padx=6, pady=4)
+    ttk.Button(workflow_frame, text="0. Prepare Raw Data", width=btn_w, command=app.prepare_raw_data).grid(row=0, column=0, padx=6, pady=4)
+    ttk.Button(workflow_frame, text="1. Load Training Data", width=btn_w, command=app.load_multiple_training_data).grid(row=0, column=1, padx=6, pady=4)
+    ttk.Button(workflow_frame, text="2. Input Expert Thresholds", width=btn_w, command=app.input_expert_thresholds).grid(row=1, column=0, padx=6, pady=4)
+    ttk.Button(workflow_frame, text="3. Input Voxel Sizes", width=btn_w, command=app.input_voxel_sizes).grid(row=1, column=1, padx=6, pady=4)
+    ttk.Button(workflow_frame, text="4. Feature Analysis", width=btn_w, command=app.analyze_ellipsoid_features).grid(row=2, column=0, padx=6, pady=4)
+    ttk.Button(workflow_frame, text="5. Train Model", width=btn_w, command=app.train_model).grid(row=2, column=1, padx=6, pady=4)
+    ttk.Button(workflow_frame, text="6a. Load Single Test Data", width=btn_w, command=app.load_test_data).grid(row=3, column=0, padx=6, pady=4)
+    ttk.Button(workflow_frame, text="6b. Load Multi Test Data", width=btn_w, command=app.load_test_data_multiple).grid(row=3, column=1, padx=6, pady=4)
+    ttk.Button(workflow_frame, text="7. Predict Analysis", width=btn_w, command=app.predict_analysis).grid(row=4, column=0, padx=6, pady=4)
+    ttk.Button(workflow_frame, text="8. Export / Reports", width=btn_w, command=app.export_results).grid(row=4, column=1, padx=6, pady=4)
 
     # Analysis & Visualization
     analysis_frame = ttk.LabelFrame(content_frame, text="Analysis & Visualization", padding=10, style="Section.TLabelframe")

@@ -33,6 +33,14 @@ full-rank principal-axis basis.
 
 ## Train a model
 
+Start at step 0 only when working from a raw Avizo Label-Analysis export. The
+tables shipped with the repository are already prepared.
+
+0. Click **0. Prepare Raw Data** to open the preparation tool
+   (`tools/BatchFile.py`) in its own window. It removes objects whose fitted
+   ellipsoid is degenerate and writes an app-format table. Loading a raw export
+   at step 1 or 6 instead stops with
+   `EigenVal1-3 must be finite and strictly positive`.
 1. Click **1. Load Training Data** and select every training table.
 2. Click **2. Input Expert Thresholds** and enter one physical-volume threshold
    in mm^3 for every selected sample.
