@@ -43,16 +43,19 @@ def test_prefilter_excludes_invalid_eigenvalues_without_shape_substitution():
         'EigenVal1': [1.0, 0.0, 1.0, 1.0, np.nan],
         'EigenVal2': [2.0, 2.0, -1.0, np.inf, 2.0],
         'EigenVal3': [3.0, 3.0, 3.0, 3.0, 3.0],
-        'Anisotropy': [1.0, 0.2, 0.3, 0.4, 0.5],
+        # Anisotropy == 1 marks a vanishing shortest axis and is filtered in its
+        # own right, so the row that survives here carries an ordinary value.
+        'Anisotropy': [0.15, 0.2, 0.3, 0.4, 0.5],
     })
 
     filtered, qc = filter_invalid_eigenvalue_rows(df)
 
     assert filtered.index.tolist() == [0]
-    assert filtered.loc[0, 'Anisotropy'] == 1.0
+    assert filtered.loc[0, 'Anisotropy'] == 0.15
     assert qc == {
         'initial_count': 5,
         'invalid_eigenvalue_count': 4,
+        'degenerate_anisotropy_count': 0,
         'retained_count': 1,
     }
 

@@ -64,11 +64,30 @@ Enter each sample's own voxel size. Using another sample's value rescales every
 feature and silently produces the wrong threshold.
 
 These tables, like `Quantity_LE01.xlsx`, are the prefiltered inputs used for the
-article. A raw Avizo Label-Analysis export is not interchangeable with them: it
-still contains objects whose fitted ellipsoid is degenerate, with a zero or
-non-finite eigenvalue, and the feature builder rejects those with
-`EigenVal1-3 must be finite and strictly positive`. That error means a raw export
-was loaded, not that the analysis failed.
+article, produced from the raw Avizo Label-Analysis exports with
+`tools/BatchFile.py`. A raw export is not interchangeable with them, and loading
+one stops the run with `EigenVal1-3 must be finite and strictly positive`. That
+message means a raw export was loaded, not that the analysis failed.
+
+The prefilter removes two kinds of degenerate object:
+
+| Sample | Raw | Invalid eigenvalue | `Anisotropy == 1` | Retained |
+|---|---:|---:|---:|---:|
+| 12RH26 | 39232 | 6198 | 1138 | 31896 |
+| BG02-4B | 26037 | 14367 | 1501 | 10169 |
+| BG04-44B | 25853 | 9498 | 1835 | 14520 |
+| CC10-18 | 21353 | 8206 | 1827 | 11320 |
+
+The first column of removals is a missing, non-finite, zero or negative
+eigenvalue. The second is `Anisotropy == 1`, which Avizo reports when the
+shortest principal axis vanishes relative to the longest. Those objects pass the
+positivity test, because their smallest eigenvalue underflows to a positive value
+near 1e-25 rather than to exactly zero, but the fabric calculation takes the
+logarithm of each eigenvalue, so such a value would enter the log-Euclidean mean
+as roughly -57 and dominate it.
+
+`tests/test_prefilter_reproduces_tables.py` pins both conditions and checks that
+the shipped tables contain no degenerate object.
 
 These four samples were provided by collaborators; see the article's
 acknowledgements and sample-provenance statement.

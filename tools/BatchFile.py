@@ -96,17 +96,40 @@ def convert_and_clean_csv(input_files, output_directory, log_file):
 
 
 def filter_invalid_eigenvalue_rows(df):
-    """Remove rows that cannot support ellipsoid or logarithmic calculations."""
+    """Remove rows that cannot support ellipsoid or logarithmic calculations.
+
+    Two conditions are removed, and they are complementary.
+
+    The first is a missing, non-finite, zero or negative eigenvalue: the fitted
+    ellipsoid has no third axis at all.
+
+    The second is ``Anisotropy == 1``, which Avizo reports when the shortest
+    principal axis vanishes relative to the longest. Those rows survive the first
+    test, because their smallest eigenvalue underflows to a positive value near
+    1e-25 rather than to exactly zero, but the fabric calculation takes the
+    logarithm of each eigenvalue, so a value of that size would enter the
+    log-Euclidean mean as roughly -57 and dominate it. They are numerically
+    degenerate for the same reason as the first group.
+    """
     eigen_cols = ['EigenVal1', 'EigenVal2', 'EigenVal3']
     missing = [column for column in eigen_cols if column not in df.columns]
     if missing:
         raise ValueError(f"Missing required eigenvalue columns: {', '.join(missing)}")
 
     eigenvalues = df[eigen_cols].apply(pd.to_numeric, errors='coerce')
-    valid = np.isfinite(eigenvalues).all(axis=1) & (eigenvalues > 0).all(axis=1)
+    eigen_ok = np.isfinite(eigenvalues).all(axis=1) & (eigenvalues > 0).all(axis=1)
+
+    if 'Anisotropy' in df.columns:
+        anisotropy = pd.to_numeric(df['Anisotropy'], errors='coerce')
+        degenerate = anisotropy == 1
+    else:
+        degenerate = pd.Series(False, index=df.index)
+
+    valid = eigen_ok & ~degenerate
     return df.loc[valid].copy(), {
         'initial_count': int(len(df)),
-        'invalid_eigenvalue_count': int((~valid).sum()),
+        'invalid_eigenvalue_count': int((~eigen_ok).sum()),
+        'degenerate_anisotropy_count': int((eigen_ok & degenerate).sum()),
         'retained_count': int(valid.sum()),
     }
 
@@ -129,6 +152,10 @@ def process_xlsx_files(input_files, output_directory, log_file, volume_threshold
                 log.write(
                     "Objects excluded for a missing, non-finite, zero, or negative "
                     f"EigenVal1-3 value: {qc['invalid_eigenvalue_count']}\n"
+                )
+                log.write(
+                    "Objects excluded for a vanishing shortest axis (Anisotropy == 1): "
+                    f"{qc['degenerate_anisotropy_count']}\n"
                 )
                 log.write(f"Objects retained after numerical-validity QC: {qc['retained_count']}\n")
 
