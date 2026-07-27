@@ -76,7 +76,7 @@ def test_tolerates_an_export_without_an_anisotropy_column():
     ("Quantity_12RH26.xlsx", 31896),
     ("Quantity_BG02-4B.xlsx", 10169),
     ("Quantity_BG04-44B.xlsx", 14520),
-    ("Quantity_CC10-18.xlsx", 11320),
+    ("Quantity_CC10.xlsx", 11320),
 ])
 def test_deposited_tables_carry_only_usable_objects(table, expected):
     """Whatever produced them, the shipped tables must contain no degenerate object."""

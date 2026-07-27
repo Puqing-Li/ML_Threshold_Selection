@@ -81,7 +81,7 @@ def test_still_rejects_a_table_that_is_missing_a_column():
     "Quantity_12RH26.xlsx",
     "Quantity_BG02-4B.xlsx",
     "Quantity_BG04-44B.xlsx",
-    "Quantity_CC10-18.xlsx",
+    "Quantity_CC10.xlsx",
 ])
 def test_every_shipped_table_passes_load_validation(name):
     path = ROOT / "examples" / name

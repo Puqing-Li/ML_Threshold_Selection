@@ -42,7 +42,7 @@ available in this repository. Load it in the GUI via
 outputs (`LE01_Loose_MeanFabric.txt`, `LE01_Strict_MeanFabric.txt`) are in
 the `outputs/` folder.
 
-## `Quantity_12RH26.xlsx`, `Quantity_BG02-4B.xlsx`, `Quantity_BG04-44B.xlsx`, `Quantity_CC10-18.xlsx`
+## `Quantity_12RH26.xlsx`, `Quantity_BG02-4B.xlsx`, `Quantity_BG04-44B.xlsx`, `Quantity_CC10.xlsx`
 
 Per-grain morphometric tables for the four additional samples of Fig 5, in the
 same format as `Quantity_LE01.xlsx`. They allow the Fig 5 sweeps and the
@@ -54,7 +54,7 @@ its own machine-learning thresholds:
 | 12RH26 | Red Hills, New Zealand | 0.041 | 40 | 144 |
 | BG02-4B | New Caledonia | 0.039 | 39 | 145 |
 | BG04-44B | New Caledonia | 0.041 | 14 | 144 |
-| CC10-18 | North Anatolian Fault | 0.074 | 14 | 143 |
+| CC10 | North Anatolian Fault | 0.074 | 14 | 143 |
 
 Apply a threshold as a volume: `Vmin_mm3 = Vmin_vox * voxel_mm ** 3`. Use the
 voxel count rather than the rounded millimetre value, because rounding the
@@ -76,7 +76,7 @@ The prefilter removes two kinds of degenerate object:
 | 12RH26 | 39232 | 6198 | 1138 | 31896 |
 | BG02-4B | 26037 | 14367 | 1501 | 10169 |
 | BG04-44B | 25853 | 9498 | 1835 | 14520 |
-| CC10-18 | 21353 | 8206 | 1827 | 11320 |
+| CC10 | 21353 | 8206 | 1827 | 11320 |
 
 The first column of removals is a missing, non-finite, zero or negative
 eigenvalue. The second is `Anisotropy == 1`, which Avizo reports when the

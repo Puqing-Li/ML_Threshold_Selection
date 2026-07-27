@@ -7,8 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [1.3.1] - 2026-07-26
 
-Repository layout only. No change to the analysis, the released classifier, or
-any reported number.
+Repository layout and one sample name. No change to the analysis, the released
+classifier, or any reported number.
+
+### Fixed
+- The North Anatolian Fault example is named CC10. It was distributed as
+  `Quantity_CC10-18.xlsx` through v1.3.0; the trailing `-18` was not part of the
+  sample identifier. The file is now `examples/Quantity_CC10.xlsx`, and its
+  11,320 objects, voxel size and thresholds are unchanged. Earlier entries in
+  this file keep the old name, which is what those releases shipped.
 
 ### Changed
 - The nine command-line analysis scripts moved from the repository root into
