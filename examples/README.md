@@ -40,7 +40,8 @@ the retained 4,991-object table was saved. The raw prefilter counts are not
 available in this repository. Load it in the GUI via
 **6a. Load Single Test Data** to reproduce the LE01 analysis; the corresponding
 outputs (`LE01_Loose_MeanFabric.txt`, `LE01_Strict_MeanFabric.txt`) are in
-the `outputs/` folder.
+`reference_outputs/`. New runs write their results to the local, Git-ignored
+`outputs/` folder.
 
 ## `Quantity_12RH26.xlsx`, `Quantity_BG02-4B.xlsx`, `Quantity_BG04-44B.xlsx`, `Quantity_CC10.xlsx`
 
@@ -86,8 +87,8 @@ near 1e-25 rather than to exactly zero, but the fabric calculation takes the
 logarithm of each eigenvalue, so such a value would enter the log-Euclidean mean
 as roughly -57 and dominate it.
 
-`tests/test_prefilter_reproduces_tables.py` pins both conditions and checks that
-the shipped tables contain no degenerate object.
+The shipped tables were checked to contain no degenerate object under these
+two conditions.
 
 These four samples were provided by collaborators; see the article's
 acknowledgements and sample-provenance statement.

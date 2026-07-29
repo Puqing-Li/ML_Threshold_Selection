@@ -52,14 +52,13 @@ No analysis, model or reported number changes.
 | Application source | `src/ml_threshold_selection/` |
 | Scripts reproducing the reported thresholds, validation, and Figs 1, 3, and 4 | `scripts/` |
 | Released classifier used for the reported results | `released_model/` |
-| Model bundles you train yourself | `models/` |
+| Model bundles you train yourself | `models/` (created at runtime) |
 | Five training tables and authoritative input values | `training_data/` |
-| Worked input and TomoFab-format examples | `examples/` |
-| Generated tables, reports and figures | `outputs/` |
+| Worked inputs, TomoFab format, and reference outputs | `examples/` |
+| Generated tables, reports and figures | `outputs/` (created at runtime) |
 | Avizo conversion utilities | `tools/` |
 | Scientific definitions | `docs/SCIENTIFIC_METHODS.md` |
 | Detailed GUI guide | `docs/user_guide.md` |
-| Tests | `tests/` |
 
 ## Installation
 

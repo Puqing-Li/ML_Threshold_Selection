@@ -19,7 +19,5 @@ dist/
 *.egg-info/
 
 # Generated model and analysis artifacts
-models/*
-!models/README.md
-outputs/*
-!outputs/README.md
+models/
+outputs/

@@ -15,13 +15,9 @@ python scripts/rebuild_revision_results.py --output outputs/revision_rebuild
 |---|---|
 | `rebuild_revision_results.py` | The reported LE01 thresholds from the released model. `--retrain` refits instead. |
 | `cross_validation.py` | Leave-one-sample-out and pooled ranking evaluation. |
-| `loso_threshold_validation.py` | Per-sample thresholds under leave-one-sample-out refitting. |
 | `generate_main_figures.py` | Main-text figures. |
 | `generate_fig1_stereonets.py` | Fig 1 orientation-density stereonets. |
-| `generate_cross_sample_threshold_audit.py` | Cross-sample threshold audit table. |
 | `axis_locking_validation.py` | Axis-locking percentages for a test sample. |
-| `training_axis_locking_audit.py` | The same audit across the five training samples. |
-| `threshold_sensitivity_analysis.py` | Threshold response to the classifier decision cutoff. |
 
 Data inputs come from `training_data/` and `examples/`; the released classifier
 comes from `released_model/`. Outputs are written to `outputs/`.

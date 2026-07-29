@@ -32,6 +32,13 @@ and reported LE01 thresholds (50 and 154 voxels) are unchanged.
   values shown in S3 Fig.
 - Documentation now distinguishes the predicted expert-defined below-threshold
   class from independent physical identification of artifacts.
+- Simplified the public repository tree: local `models/` and `outputs/`
+  directories are created at runtime and ignored, while the six LE01 reference
+  outputs are kept under `examples/reference_outputs/`.
+- Removed the development test suite and continuous-integration configuration
+  from the public research release.
+- Removed exploratory cross-sample threshold-audit scripts that are not used to
+  reproduce the article, supplementary material, or reviewer-response results.
 
 ## [1.3.1] - 2026-07-26
 
