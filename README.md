@@ -13,39 +13,8 @@ also train a new model from the supplied five tables or from your own
 expert-labelled samples; training writes to `models/` and never overwrites the
 released bundle.
 
-## What changed in v1.3.2
-
-The TomoFab-format demonstration file now records equivalent-ellipsoid semiaxes as
-`sqrt(5 * EigenVal)`. The figure scripts reproduce the revised manuscript
-figures and export stable compressed TIFF files, and the GUI training path
-explicitly records the LightGBM component-seed profile used by the released
-model. User-facing data are grouped under `data/`, and analysis and
-data-preparation utilities are grouped under `scripts/`. The released model
-bundle, training inputs, and reported LE01 thresholds (50 and 154 voxels) are
-unchanged.
-
-## What changed in v1.3.1
-
-Layout only. The command-line scripts moved into `scripts/`, the released
-classifier moved from `trained model/` to `released_model/`, and the training
-tables it duplicated were dropped in favour of the copies in `training_data/`.
-No analysis, model or reported number changes.
-
-## What changed in v1.3.0
-
-- Every training and test sample requires its own measured voxel edge length in
-  mm/voxel. There is no `0.03 mm` default or first-sample fallback.
-- The model input is continuous voxel count,
-  `Volume3d_mm3 / VoxelSize_mm^3`, plus six log-ellipsoid tensor components.
-- Expert labels are assigned directly in physical volume:
-  `Volume3d_mm3 < ExpertThreshold_mm3`. The expert threshold is not rounded to
-  an integer voxel count during labelling.
-- Equivalent-ellipsoid semiaxes are calculated as `sqrt(5 * EigenVal)`.
-- Invalid volumes, eigenvalues, eigenvectors, and incomplete voxel-size maps
-  stop the workflow instead of being replaced by numerical defaults.
-- Saved models carry feature schema
-  `resolution_aware_v2_per_sample_sqrt5`; legacy global-0.03 bundles are
-  rejected by the current loader.
+Release-specific changes are recorded in
+[`docs/CHANGELOG.md`](docs/CHANGELOG.md).
 
 ## Repository layout
 
