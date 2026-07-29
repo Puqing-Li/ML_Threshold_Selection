@@ -9,8 +9,8 @@ openpyxl>=3.0.0  # For .xlsx read/write
 xlrd>=2.0.1  # For reading legacy .xls files (e.g. TomoFab-format TT_*.xls)
 tifffile>=2022.8.12  # Stable compressed TIFF export for manuscript figures
 
-# Optional dependencies
-lightgbm>=3.2.0  # Optional, can be replaced with RandomForest
+# Model dependency
+lightgbm>=3.2.0  # The application retains a RandomForest fallback
 
 # GUI dependencies (usually included with Python)
 # tkinter is part of Python standard library

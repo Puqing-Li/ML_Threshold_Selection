@@ -146,10 +146,7 @@ class weighting is balanced. AUC values are:
 | LE03 | 0.996 |
 | LE19 | 0.906 |
 
-Pooled stratified five-fold AUC is 0.989 over all 35,745 objects. The reported
-range is not sensitive to these implementation choices: omitting the fold-wise
-scaler, or dropping the balanced class weighting, moves individual values by at
-most 0.008 and leaves every sample above 0.90.
+Pooled stratified five-fold AUC is 0.989 over all 35,745 objects.
 
 These values were regenerated with Python 3.13.13, NumPy 2.4.6, pandas 3.0.3,
 scikit-learn 1.9.0, LightGBM 4.6.0 and openpyxl 3.1.5. The numerically relevant

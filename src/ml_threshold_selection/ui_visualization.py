@@ -265,7 +265,6 @@ def show_prediction_visualization(app):
     ax_top.set_xticks(xticks)
     ax_top.set_xticklabels(mm3_labels, rotation=0)
     ax_top.set_xlabel('Equivalent Volume (mm³)')
-    ax_top.set_xlabel('Equivalent Volume (mm³)')
     
     # Hide the spines on axes[0, 0] and ax_top
     axes[0, 0].spines['right'].set_visible(False)
@@ -378,7 +377,6 @@ def show_prediction_visualization(app):
     axes[1, 1].set_xlabel('log10(Voxel Threshold)')
     axes[1, 1].set_ylabel('Retention Rate', color='b')
     ax2.set_ylabel('Retained mean class probability', color='r')
-    axes[1, 1].set_title('Dual Threshold Analysis (Voxel Domain)')
     axes[1, 1].set_title('Dual Threshold Analysis (Voxel Domain)')
     axes[1, 1].grid(True, alpha=0.3)
     axes[1, 1].spines['top'].set_visible(False)

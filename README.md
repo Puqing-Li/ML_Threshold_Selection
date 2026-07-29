@@ -1,36 +1,17 @@
 # ML Threshold Selection v1.3.2
 
-Machine-learning-assisted selection of the minimum object-volume threshold
-(`Vmin`) for XRCT particle analysis. The application trains a classifier from
-expert-labelled samples, applies sample-specific scan resolution during feature
-construction, and computes 3D mean-fabric, P' and T after filtering.
+ML Threshold Selection is a graphical application for selecting candidate
+minimum object-volume thresholds (`Vmin`) in XRCT particle analysis. It learns
+from expert-labelled samples, uses the measured scan resolution of each sample,
+and calculates 3D mean fabric, P' and T after filtering.
 
-The released classifier used for the reported results ships in
-`data/released_model/`
-and carries the current `resolution_aware_v2_per_sample_sqrt5` feature schema.
-**Load Last Model** uses it when no locally trained model is present. You can
-also train a new model from the supplied five tables or from your own
-expert-labelled samples; training writes to `models/` and never overwrites the
-released bundle.
+The released classifier used for the accompanying manuscript is included in
+`data/released_model/`. Its loose and strict outputs are reproducible candidate
+operating points, not independent physical ground truth; they should be
+reviewed against the segmented volume, stereonets and expected geological
+fabric.
 
-Release-specific changes are recorded in
-[`docs/CHANGELOG.md`](docs/CHANGELOG.md).
-
-## Repository layout
-
-| Content | Location |
-|---|---|
-| Application entry point | `main.py` |
-| Application source | `src/ml_threshold_selection/` |
-| Released classifier, training tables, examples and reference outputs | `data/` |
-| Figure, validation and data-preparation utilities | `scripts/` |
-| Model bundles you train yourself | `models/` (created at runtime) |
-| Generated tables, reports and figures | `outputs/` (created at runtime) |
-| Scientific definitions | `docs/SCIENTIFIC_METHODS.md` |
-| Detailed GUI guide | `docs/user_guide.md` |
-| No-code quick start | `docs/QUICKSTART.md` |
-
-## Installation
+## Quick start
 
 Python 3.8 or newer with Tkinter is required.
 
@@ -41,139 +22,82 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-On Windows, double-click `run_app.bat` to install dependencies and launch the
-application.
+Windows users can instead double-click `run_app.bat`; macOS users can use
+`run_app.command`.
 
-For exact regeneration of the manuscript validation values shown in S3 Fig,
-use Python 3.13.13 and the recorded numerical-library versions:
+To reproduce the released LE01 example from a fresh clone:
+
+1. Click **Load Last Model**.
+2. Click **6a. Load Single Test Data** and select
+   `data/examples/Quantity_LE01.xlsx`.
+3. Enter the measured voxel size, `0.030` mm/voxel.
+4. Click **7. Predict Analysis**.
+
+The released model returns loose and strict candidates of 50 and 154 voxels,
+retaining 2,212 and 1,074 objects, respectively. See
+[`docs/QUICKSTART.md`](docs/QUICKSTART.md) for the complete no-code workflow.
+
+## Train your own model
+
+The application can also train a classifier from your own expert-labelled
+samples. Each training and test sample requires its own measured voxel edge
+length; the software does not insert a default or reuse the first sample's
+resolution. Locally trained bundles are written to `models/` and do not
+overwrite the released classifier.
+
+The five manuscript training tables and their input values are in
+`data/training/`. Follow the step-by-step instructions in
+[`docs/user_guide.md`](docs/user_guide.md).
+
+## Reproduce reported results
+
+The released-model LE01 analysis can be rebuilt with:
+
+```bash
+python scripts/analysis/rebuild_revision_results.py \
+  --output outputs/revision_rebuild
+```
+
+The object-level ranking evaluation reported in S3 Fig can be regenerated with:
 
 ```bash
 python -m pip install -r scripts/requirements-reproducibility.txt
-```
-
-The broader version ranges in `requirements.txt` support normal application
-use. Small last-decimal changes in newly fitted cross-validation models can
-occur across numerical-library builds; loading `data/released_model/` does not
-refit the reported classifier.
-
-## Train a new model
-
-The supplied values are recorded in `data/training/training_config.csv`.
-
-Start at step 0 only when working from a raw Avizo Label-Analysis export. The
-tables shipped in `data/training/` and `data/examples/` are already prepared.
-
-0. Click **0. Prepare Raw Data** to open the preparation tool, which removes
-   objects whose fitted ellipsoid is degenerate and writes an app-format table.
-1. Click **1. Load Training Data** and select all five
-   `data/training/total<SampleID>.xlsx` files.
-2. Click **2. Input Expert Thresholds** and enter, in mm3:
-
-   ```text
-   AKAN20:0.0039
-   ANA16937:0.0008
-   HL19335:0.0010
-   LE03:0.0010
-   LE19:0.0018
-   ```
-
-3. Click **3. Input Voxel Sizes** and enter the measured values in mm/voxel:
-
-   ```text
-   AKAN20     0.030
-   ANA16937  0.040
-   HL19335   0.035
-   LE03      0.030
-   LE19      0.035
-   ```
-
-4. Optionally run **4. Feature Analysis**.
-5. Click **5. Train Model**. The new classifier and fitted scaler are saved in
-   `models/` only after training succeeds.
-
-The displayed training AUC and accuracy are fit diagnostics. They are not an
-independent validation of scalar-threshold recovery.
-
-The GUI training path uses the explicit LightGBM component-seed profile recorded
-by the released manuscript model. The leave-one-sample-out validation script uses
-seed 42 and balanced class weights within each training fold; those validation
-settings do not replace the released fitted model.
-
-The active workflow is supervised: expert-selected physical-volume thresholds
-generate deterministic grain-level pseudo-labels, and LightGBM is fitted to
-those labels. No unlabeled observations enter model fitting. The resulting
-scores therefore measure agreement with the configured pseudo-label rule, not
-independent identification of physical artifacts.
-
-## Apply the trained model
-
-1. In a new session, click **Load Last Model**.
-2. Load one or more test tables with **6a** or **6b**.
-3. Enter the measured voxel size for every test sample. No value is inferred.
-4. Click **7. Predict Analysis**.
-5. Use **Mean Fabric**, **Fabric Boxplots**, and **8. Export / Reports** as
-   required.
-
-The loose threshold is derived from the cumulative model-score curve. The
-strict threshold is one voxel above the largest object whose predicted
-probability of the expert-defined below-threshold class exceeds the configured
-tolerance, so every flagged object is excluded by a `Volume >= threshold`
-filter.
-
-## P' definition
-
-The implementation follows the manuscript definition. For positive fabric-axis
-magnitudes `V1`, `V2`, and `V3`:
-
-```text
-f1 = ln(V1), f2 = ln(V2), f3 = ln(V3)
-f_mean = (f1 + f2 + f3) / 3
-P' = exp(sqrt(2 * [(f1-f_mean)^2 + (f2-f_mean)^2 + (f3-f_mean)^2]))
-```
-
-The code uses the mean of the three logarithms, not the logarithm of their
-arithmetic mean. Mean-fabric and bootstrap calculations call the same tested
-definition.
-
-## Input columns
-
-Each XLSX or CSV table must contain:
-
-- `Volume3d (mm^3) `, including the trailing space used by the Avizo export;
-- `EigenVal1`, `EigenVal2`, `EigenVal3`;
-- `EigenVec1X` through `EigenVec3Z`.
-
-`scripts/data_preparation/BatchFile.py` prepares app-format tables from raw
-Avizo Label Analysis exports. It removes rows with missing, non-finite, zero,
-or negative eigenvalues and preserves complete sample identifiers.
-`scripts/data_preparation/To_tomofab.py` creates TomoFab-compatible tables.
-
-## Pseudo-label ranking evaluation
-
-After reviewing the intended endpoint, run the object-level script with:
-
-```bash
 python scripts/analysis/cross_validation.py \
   --data data/training \
   --config data/training/training_config.csv \
   --out outputs/S3_validation
 ```
 
-The script uses the same per-sample voxel-size feature implementation as the
-GUI. Its object-level AUC describes ranking of the configured expert-derived
-labels; it does not independently prove recovery of each historical scalar
-`Vmin`. The exact environment used for the reported AUC values is recorded in
-`scripts/requirements-reproducibility.txt`.
+The AUC values quantify ranking against expert-derived physical-volume
+pseudo-labels. They are not an independent validation of artifact identity or
+recovery of each historical scalar threshold.
 
-## References
+## Repository layout
 
-- Brandon, M.T., 1995. *Journal of Structural Geology* 17, 1375-1385.
-  https://doi.org/10.1016/0191-8141(95)00032-9
-- Jelinek, V., 1981. *Tectonophysics* 79, T63-T67.
-  https://doi.org/10.1016/0040-1951(81)90110-4
-- Petri, B., Almqvist, B.S.G., Pistone, M., 2020. *Computers & Geosciences*
-  138, 104444. https://doi.org/10.1016/j.cageo.2020.104444
+| Content | Location |
+|---|---|
+| Application entry point | `main.py` |
+| Application source | `src/` |
+| Training data, examples and released classifier | `data/` |
+| Analysis and data-preparation utilities | `scripts/` |
+| User and scientific documentation | `docs/` |
+| Locally trained models | `models/` (created at runtime) |
+| Generated results | `outputs/` (created at runtime) |
+
+## Documentation
+
+- [Quick start](docs/QUICKSTART.md)
+- [GUI user guide](docs/user_guide.md)
+- [Scientific methods and definitions](docs/SCIENTIFIC_METHODS.md)
+- [Analysis scripts](scripts/README.md)
+- [Release history](docs/CHANGELOG.md)
+
+## Citation
+
+Use the citation metadata in [`CITATION.cff`](CITATION.cff). The archived
+software record is available at
+[doi:10.5281/zenodo.18979422](https://doi.org/10.5281/zenodo.18979422).
 
 ## License
 
-MIT. See `LICENSE`.
+MIT. See [`LICENSE`](LICENSE).

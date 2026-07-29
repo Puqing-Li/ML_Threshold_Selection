@@ -10,7 +10,7 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Virtual Environments (still ignored to avoid breaking repo)
+# Virtual environments and build output
 .venv/
 venv/
 env/
