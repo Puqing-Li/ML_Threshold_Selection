@@ -1,6 +1,6 @@
 # Model and Feature Guide
 
-The active v1.3.1 workflow is documented in
+The active v1.3.2 workflow is documented in
 [`user_guide.md`](user_guide.md) and the scientific definitions are documented
 in [`SCIENTIFIC_METHODS.md`](SCIENTIFIC_METHODS.md).
 

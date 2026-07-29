@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Generate corrected manuscript Figs 3 and 4 from a frozen LE01 run."""
+"""Generate corrected manuscript Figs 3 and 4 from a released LE01 run."""
 
 from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import sys
 from pathlib import Path
@@ -16,6 +17,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 import numpy as np
 import pandas as pd
+import tifffile
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,13 +33,25 @@ from ml_threshold_selection.fabric_bootstrap import (
 from ml_threshold_selection.fabric_thresholds import generate_logstep_thresholds
 from ml_threshold_selection.prediction_analysis import compute_dual_thresholds
 
+STEREONET_SCRIPT = ROOT / "scripts" / "generate_fig1_stereonets.py"
+STEREONET_SPEC = importlib.util.spec_from_file_location(
+    "generate_fig1_stereonets_for_fig4",
+    STEREONET_SCRIPT,
+)
+if STEREONET_SPEC is None or STEREONET_SPEC.loader is None:
+    raise ImportError(f"Cannot load stereonet source from {STEREONET_SCRIPT}")
+STEREONETS = importlib.util.module_from_spec(STEREONET_SPEC)
+STEREONET_SPEC.loader.exec_module(STEREONETS)
+
 
 BLUE = "#0072B2"
 VERMILLION = "#D55E00"
+GREEN = "#1B9E77"
 DARK = "#253746"
 GREY = "#8C8C8C"
 LIGHT_GREY = "#D0D0D0"
 LIGHT_BLUE = "#9ECAE1"
+FIG4_STEREONET_THRESHOLDS_MM3 = (0.0, 0.0006, 0.002, 0.004, 0.01, 0.06)
 
 
 def _sha256(path: Path) -> str:
@@ -78,20 +92,23 @@ def _save_figure(fig: plt.Figure, stem: Path) -> None:
         bbox_inches="tight",
         metadata={"Creator": "ML Threshold Selection", "Date": None},
     )
-    fig.savefig(stem.with_suffix(".png"), dpi=600, bbox_inches="tight")
-    fig.savefig(
-        stem.with_suffix(".tif"),
-        dpi=600,
-        bbox_inches="tight",
-        pil_kwargs={"compression": "tiff_lzw"},
-    )
+    png_path = stem.with_suffix(".png")
+    fig.savefig(png_path, dpi=600, bbox_inches="tight")
     tif_path = stem.with_suffix(".tif")
-    with Image.open(tif_path) as source:
+    with Image.open(png_path) as source:
         rgba = source.convert("RGBA")
         white = Image.new("RGBA", rgba.size, "white")
         flattened = Image.alpha_composite(white, rgba).convert("RGB")
         flattened.thumbnail((4500, 5250), Image.Resampling.LANCZOS)
-        flattened.save(tif_path, compression="tiff_lzw", dpi=(600, 600))
+        tifffile.imwrite(
+            tif_path,
+            np.asarray(flattened),
+            photometric="rgb",
+            compression="deflate",
+            resolution=(600, 600),
+            resolutionunit="INCH",
+            metadata=None,
+        )
 
 
 def _retained_probability_curve(
@@ -150,8 +167,8 @@ def _figure3(
     handles = [
         Line2D([], [], marker="o", ls="", ms=4, color=GREY, alpha=0.55, label="Segmented objects"),
         Line2D([], [], color="#A50026", lw=2.0, label=r"Retained-population mean, $A(V_{min})$"),
-        Line2D([], [], color=BLUE, lw=1.8, ls="--", label=f"Loose operating point ({loose_vox} voxels)"),
-        Line2D([], [], color=VERMILLION, lw=1.8, ls="--", label=f"Strict sensitivity point ({strict_vox} voxels)"),
+        Line2D([], [], color=BLUE, lw=1.8, ls="--", label=f"Loose candidate ({loose_vox} voxels)"),
+        Line2D([], [], color=VERMILLION, lw=1.8, ls="--", label=f"Strict candidate ({strict_vox} voxels)"),
     ]
     ax.legend(handles=handles, loc="upper right", frameon=False)
     secondary = ax.secondary_xaxis(
@@ -227,7 +244,12 @@ def _bootstrap_source(
     return pd.DataFrame(long_rows), pd.DataFrame(summary_rows)
 
 
-def _figure4(long_data: pd.DataFrame, summary: pd.DataFrame, out_dir: Path) -> None:
+def _figure4(
+    data: pd.DataFrame,
+    long_data: pd.DataFrame,
+    summary: pd.DataFrame,
+    out_dir: Path,
+) -> None:
     thresholds = summary["threshold_mm3"].to_numpy()
     positions = np.arange(len(summary), dtype=float)
     p_samples = [
@@ -240,13 +262,68 @@ def _figure4(long_data: pd.DataFrame, summary: pd.DataFrame, out_dir: Path) -> N
     ]
     classes = summary["threshold_class"].tolist()
     colors = {
-        "loose": BLUE,
+        "loose": GREEN,
         "strict": VERMILLION,
         "below_loose": LIGHT_GREY,
         "above_loose": LIGHT_BLUE,
     }
 
-    fig, axes = plt.subplots(2, 1, figsize=(7.5, 7.2), sharex=True, constrained_layout=True)
+    fig = plt.figure(figsize=(7.5, 8.2), constrained_layout=True)
+    layout = fig.add_gridspec(3, 1, height_ratios=(0.52, 1.0, 1.0))
+    stereonet_layout = layout[0].subgridspec(1, len(FIG4_STEREONET_THRESHOLDS_MM3))
+    stereonet_axes = [
+        fig.add_subplot(stereonet_layout[0, index])
+        for index in range(len(FIG4_STEREONET_THRESHOLDS_MM3))
+    ]
+    volumes = data["Volume3d (mm^3) "].astype(float).to_numpy()
+    for ax, threshold_mm3 in zip(stereonet_axes, FIG4_STEREONET_THRESHOLDS_MM3):
+        retained = data.loc[volumes >= threshold_mm3]
+        vectors = STEREONETS._unit_axial_vectors(retained, 3)
+        x_base, _, base_grid = STEREONETS.modified_kamb_mud_grid(vectors)
+        x_grid, y_grid, density = STEREONETS._interpolated_net(x_base, base_grid)
+        finite = density[np.isfinite(density)]
+        levels = np.linspace(
+            float(finite.min()),
+            float(finite.max()),
+            STEREONETS.CONTOUR_INTERVALS + 1,
+        )
+        fill = ax.contourf(
+            x_grid,
+            y_grid,
+            density,
+            levels=levels,
+            cmap=STEREONETS._axis_colormap(3),
+            antialiased=True,
+        )
+        ax.contour(
+            x_grid,
+            y_grid,
+            density,
+            levels=levels[1:-1],
+            colors="#333333",
+            linewidths=0.25,
+            alpha=0.75,
+        )
+        STEREONETS._draw_net(ax)
+        threshold_label = "0" if threshold_mm3 == 0 else f"{threshold_mm3:g}"
+        ax.set_title(
+            rf"$V_{{min}}$ = {threshold_label} mm$^3$" + f"\n$n$ = {len(retained):,}",
+            fontsize=6.5,
+            pad=2,
+        )
+        colorbar = fig.colorbar(fill, ax=ax, fraction=0.05, pad=0.01)
+        colorbar.set_label("m.u.d.", fontsize=5.5)
+        colorbar.ax.tick_params(labelsize=5)
+    stereonet_axes[0].text(
+        -0.24,
+        1.16,
+        "(a)",
+        transform=stereonet_axes[0].transAxes,
+        fontsize=11,
+        fontweight="bold",
+    )
+
+    axes = [fig.add_subplot(layout[1]), fig.add_subplot(layout[2])]
     for ax, samples, full_values, ylabel, reference in [
         (axes[0], p_samples, summary["full_population_P_prime"], "Corrected degree of anisotropy, P'", 1.0),
         (axes[1], t_samples, summary["full_population_T"], "Jelinek shape parameter, T", 0.0),
@@ -271,8 +348,8 @@ def _figure4(long_data: pd.DataFrame, summary: pd.DataFrame, out_dir: Path) -> N
         ax.spines[["top", "right"]].set_visible(False)
         ax.grid(axis="y", color="#E5E5E5", lw=0.6)
 
-    for panel, ax in zip(("A", "B"), axes):
-        ax.text(-0.09, 1.02, panel, transform=ax.transAxes, fontsize=12, fontweight="bold")
+    for panel, ax in zip(("(b)", "(c)"), axes):
+        ax.text(-0.09, 1.02, panel, transform=ax.transAxes, fontsize=11, fontweight="bold")
 
     labels = []
     for index, threshold_vox in enumerate(summary["threshold_vox"]):
@@ -283,19 +360,23 @@ def _figure4(long_data: pd.DataFrame, summary: pd.DataFrame, out_dir: Path) -> N
     axes[1].set_xticks(positions)
     axes[1].set_xticklabels(labels, rotation=0)
     axes[1].set_xlabel("Minimum retained volume (voxels)")
+    axes[0].set_xticks(positions)
+    axes[0].tick_params(axis="x", which="both", bottom=False, labelbottom=False)
+    axes[0].set_xlim(-0.5, len(positions) - 0.5)
+    axes[1].set_xlim(-0.5, len(positions) - 0.5)
     legend = [
-        Patch(facecolor=BLUE, edgecolor=DARK, label="Loose operating point"),
-        Patch(facecolor=VERMILLION, edgecolor=DARK, label="Strict sensitivity point"),
-        Patch(facecolor=LIGHT_GREY, edgecolor=DARK, label="Below loose point"),
-        Patch(facecolor=LIGHT_BLUE, edgecolor=DARK, label="Above loose point"),
+        Patch(facecolor=GREEN, edgecolor=DARK, label="Loose candidate"),
+        Patch(facecolor=VERMILLION, edgecolor=DARK, label="Strict candidate"),
+        Patch(facecolor=LIGHT_GREY, edgecolor=DARK, label="Below loose candidate"),
+        Patch(facecolor=LIGHT_BLUE, edgecolor=DARK, label="Above loose candidate"),
         Line2D([], [], marker="D", color="black", ls="", ms=4, label="Full retained-population estimate"),
     ]
-    fig.legend(
+    axes[0].legend(
         handles=legend,
         frameon=False,
-        loc="upper center",
-        bbox_to_anchor=(0.5, 1.01),
-        ncol=3,
+        loc="upper left",
+        ncol=2,
+        fontsize=7,
     )
     _save_figure(fig, out_dir / "Fig4")
     plt.close(fig)
@@ -316,7 +397,7 @@ def run(args: argparse.Namespace) -> None:
     strict_vox = int(np.ceil(strict_raw))
     if (loose_vox, strict_vox) != (args.expected_loose, args.expected_strict):
         raise RuntimeError(
-            f"Frozen thresholds changed: got {(loose_vox, strict_vox)}, "
+            f"Released-model thresholds changed: got {(loose_vox, strict_vox)}, "
             f"expected {(args.expected_loose, args.expected_strict)}"
         )
 
@@ -340,7 +421,7 @@ def run(args: argparse.Namespace) -> None:
         compression={"method": "gzip", "mtime": 0},
     )
     fabric_summary.to_csv(args.output / "Fig4_threshold_summary.csv", index=False)
-    _figure4(bootstrap, fabric_summary, args.output)
+    _figure4(data, bootstrap, fabric_summary, args.output)
 
     metadata = {
         "input_predictions": str(args.predictions.resolve()),
@@ -352,6 +433,9 @@ def run(args: argparse.Namespace) -> None:
         "loose_continuous_vox": float(loose_raw),
         "loose_applied_vox": loose_vox,
         "strict_applied_vox": strict_vox,
+        "figure_4_stereonet_thresholds_mm3": list(FIG4_STEREONET_THRESHOLDS_MM3),
+        "figure_4_stereonet_axis": "minimum principal ellipsoid axis (Phi3)",
+        "figure_4_stereonet_density_method": "TomoFab modified Kamb m.u.d.",
         "figure_4_outliers_displayed": False,
         "figure_4_outliers_available_in": "Fig4_bootstrap_values.csv.gz",
     }

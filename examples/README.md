@@ -94,8 +94,13 @@ acknowledgements and sample-provenance statement.
 
 ## `TT_totalLE19.xls`: example TomoFab input
 
-Shows exactly what a TomoFab-ready file looks like (protocol Step 51.2,
+This is a file-format demonstration generated from the LE19 training table;
+LE01 remains the manuscript worked example. The file shows exactly what a
+TomoFab-ready table looks like (protocol Step 51.2,
 Option B): tab-separated, with the TomoFab header schema (`Number`,
 `Component`, `Unique#`, `Volume (mm^3)`, `PEllipsoid ...`). Produced from
-training sample LE19 with `tools/To_tomofab.py`. TomoFab itself is a separate,
-third-party MATLAB code (Petri et al. 2020): https://github.com/benpetri/tomofab
+training sample LE19 with `tools/To_tomofab.py`. The converter writes
+equivalent-ellipsoid semiaxes as `sqrt(5 * EigenVal)`; the `PEllipsoid Rad`
+columns are lengths in mm, not raw covariance eigenvalues. TomoFab itself is a
+separate, third-party MATLAB code (Petri et al. 2020):
+https://github.com/benpetri/tomofab

@@ -8,11 +8,11 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from typing import Dict, Tuple, Any
+from typing import Any, Dict, Optional, Tuple
 
 
-def lightgbm_parameters(random_seed: int) -> Dict[str, Any]:
-    return {
+def lightgbm_parameters(random_seed: Optional[int] = None) -> Dict[str, Any]:
+    params = {
         'objective': 'binary',
         'metric': 'auc',
         'boosting_type': 'gbdt',
@@ -22,13 +22,28 @@ def lightgbm_parameters(random_seed: int) -> Dict[str, Any]:
         'bagging_fraction': 0.8,
         'bagging_freq': 5,
         'verbose': -1,
-        'seed': random_seed,
-        'feature_fraction_seed': random_seed,
-        'bagging_seed': random_seed,
-        'data_random_seed': random_seed,
-        'deterministic': True,
-        'force_col_wise': True,
     }
+    if random_seed is None:
+        # Explicitly preserve the seed profile used by the released manuscript
+        # model. These are LightGBM 4.6.0's recorded component seeds.
+        params.update({
+            'bagging_seed': 3,
+            'feature_fraction_seed': 2,
+            'data_random_seed': 1,
+            'extra_seed': 6,
+            'drop_seed': 4,
+            'objective_seed': 5,
+        })
+    else:
+        params.update({
+            'seed': random_seed,
+            'feature_fraction_seed': random_seed,
+            'bagging_seed': random_seed,
+            'data_random_seed': random_seed,
+            'deterministic': True,
+            'force_col_wise': True,
+        })
+    return params
 
 
 def train_model_pipeline(
@@ -36,7 +51,7 @@ def train_model_pipeline(
     voxel_sizes: Dict[str, float],
     resolution_aware_engineer,
     lightgbm_available: bool,
-    random_seed: int = 42,
+    random_seed: Optional[int] = None,
 ) -> Tuple[Any, pd.DataFrame, Dict[str, Any]]:
     # Verify voxel sizes
     missing = []
@@ -68,7 +83,7 @@ def train_model_pipeline(
         clf = RandomForestClassifier(
             n_estimators=100,
             max_depth=10,
-            random_state=random_seed,
+            random_state=42 if random_seed is None else random_seed,
             class_weight='balanced'
         )
         clf.fit(X, y)

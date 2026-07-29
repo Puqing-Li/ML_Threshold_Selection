@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.2] - 2026-07-29
+
+Correction and reproducibility update. The released classifier, training inputs,
+and reported LE01 thresholds (50 and 154 voxels) are unchanged.
+
+### Fixed
+- Corrected the TomoFab-format demonstration file
+  `examples/TT_totalLE19.xls`: its `PEllipsoid Rad1/2/3 (mm)`
+  columns now contain equivalent-ellipsoid semiaxes calculated as
+  `sqrt(5 * EigenVal)`, matching `tools/To_tomofab.py`.
+- Replaced the unstable Pillow LZW path used for manuscript TIFF export with
+  tested Deflate-compressed TIFF output.
+
+### Changed
+- `generate_main_figures.py` now reproduces the complete revised Fig 4,
+  including the six minimum-axis stereonets, and uses the manuscript's
+  candidate-threshold terminology.
+- `generate_fig1_stereonets.py` uses the same before-filtering, loose-candidate,
+  and strict-candidate labels as the manuscript.
+- The GUI training path explicitly applies the LightGBM component-seed profile
+  recorded in the released model. Seed-42 validation remains a separate,
+  deterministic evaluation path.
+- Added `requirements-reproducibility.txt` with the Python and numerically
+  relevant library versions used to regenerate the reported cross-validation
+  values shown in S3 Fig.
+- Documentation now distinguishes the predicted expert-defined below-threshold
+  class from independent physical identification of artifacts.
+
 ## [1.3.1] - 2026-07-26
 
 Repository layout and one sample name. No change to the analysis, the released
@@ -85,15 +113,16 @@ classifier, or any reported number.
 - `rebuild_revision_results.py` loads the released bundle by default and returns
   the reported LE01 thresholds, 50 and 154 voxels. Refitting is available through
   `--retrain` and returns 204 voxels for the strict threshold, because that
-  threshold is the largest object whose artifact probability still exceeds 0.01
-  and therefore a maximum over the fitted model's low-probability tail
+  threshold is the largest object whose predicted below-threshold-class
+  probability still exceeds 0.01 and therefore a maximum over the fitted
+  model's low-probability tail
 - `cross_validation.py` applies the balanced class weighting that
   `training_pipeline.py` uses, so the evaluation and the training pipeline fit
   the same classifier. Leave-one-sample-out AUC is 0.906 to 0.996 and the pooled
   five-fold value is 0.989; the reported range is unchanged
 - Probability-versus-volume points are drawn in one colour, with no colour bar,
-  matching Fig 3 of the article. Shading them by artifact probability repeated
-  the vertical axis
+  matching Fig 3 of the article. Shading them by below-threshold-class
+  probability repeated the vertical axis
 - The documentation states that no classifier ships only where that is true:
   models trained locally go to `models/`, which is empty in a fresh clone
 
@@ -170,7 +199,7 @@ classifier, or any reported number.
 ### Features
 - **Machine Learning Pipeline**: Support for LightGBM, Random Forest, and other scikit-learn classifiers
 - **Feature Engineering**: 7D log-ellipsoid tensor features with resolution normalization
-- **Dual Thresholds**: Automatic detection of loose and strict operating thresholds
+- **Dual Thresholds**: Algorithmic calculation of loose and strict candidate operating thresholds
 - **Fabric Analysis**: Jelínek (1981) methodology with bootstrap validation
 - **GUI Interface**: User-friendly Tkinter application for end-to-end workflow
 - **Command Line Tools**: Scripts for batch processing and automation

@@ -1,6 +1,6 @@
 # User Guide
 
-This guide describes the v1.3.1 resolution-aware GUI workflow.
+This guide describes the v1.3.2 resolution-aware GUI workflow.
 
 ## Install and launch
 

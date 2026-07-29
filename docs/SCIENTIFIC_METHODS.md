@@ -21,13 +21,14 @@ pipeline unless this document explicitly names them.
 50 voxels (1.350000e-03 mm3, 2212 grains retained) and strict 154 voxels
 (4.158000e-03 mm3, 1074 grains retained).
 
-Passing `--retrain` refits the classifier from `training_data/` instead. The
-loose threshold is unchanged by this, because it is read from the inflection of
-the cumulative artifact-rate curve, which is a stable, aggregate property. The
-strict threshold is not: it is defined as the largest object whose artifact
-probability still exceeds 0.01, so it is a maximum over the low-probability tail
-of the fitted model and moves when the model is refitted. Refitting in this
-environment returns 204 voxels rather than 154 for LE01. The reported strict
+Passing `--retrain` refits the classifier from `training_data/` instead. In the
+current refit, the loose threshold is unchanged; it is read from the inflection
+of the retained-population mean-score curve. The strict threshold is not
+unchanged: it is defined from the largest object whose predicted probability
+of the expert-defined below-threshold class exceeds 0.01, so it is a maximum
+over the low-probability tail of the fitted model and moves when the model is
+refitted. Refitting in this environment returns 204 voxels rather than 154 for
+LE01. The reported strict
 threshold is therefore a property of the released model, and reproducing it
 requires that model rather than a new fit.
 
@@ -123,10 +124,11 @@ the manuscript analyses.
 
 The primary classifier is LightGBM binary GBDT with 31 leaves, learning rate
 0.05, feature fraction 0.9, bagging fraction 0.8, bagging every five rounds, and
-100 boosting rounds. The global, feature-fraction, bagging, and data seeds are
-42; deterministic mode and force-col-wise are enabled. No class weighting is
-used in the reported LightGBM analysis. The random-forest fallback is not the
-model used for the reported results.
+100 boosting rounds. The released fitted model used the LightGBM 4.6.0 component
+seeds recorded in its model file (feature fraction 2, bagging 3, data 1, extra
+6, drop 4, and objective 5); the GUI training path makes that profile explicit.
+No class weighting was used for the released fitted model. The random-forest
+fallback was not used for the reported results.
 
 ## Evaluation scope
 
@@ -148,6 +150,12 @@ Pooled stratified five-fold AUC is 0.989 over all 35,745 objects. The reported
 range is not sensitive to these implementation choices: omitting the fold-wise
 scaler, or dropping the balanced class weighting, moves individual values by at
 most 0.008 and leaves every sample above 0.90.
+
+These values were regenerated with Python 3.13.13, NumPy 2.4.6, pandas 3.0.3,
+scikit-learn 1.9.0, LightGBM 4.6.0 and openpyxl 3.1.5. The numerically relevant
+versions are recorded in `requirements-reproducibility.txt`. Refitting tree
+models under other numerical-library builds can change the last reported
+decimals; this does not alter the released fitted model or its LE01 thresholds.
 
 These values measure object ranking against the expert volume-derived
 pseudo-label rule. They are not independent estimates of physical
@@ -175,7 +183,7 @@ interior points and first-order one-sided differences at endpoints.
   The operational threshold is the ceiling of the continuous value.
 - **Strict threshold:** one voxel above the floor of the largest continuous
   voxel count whose predicted probability is greater than the tolerance (0.01
-  for the reported seed-42 analysis). If no object exceeds the tolerance, use
+  for the released fitted-model analysis). If no object exceeds the tolerance, use
   the ceiling of the smallest observed continuous voxel count. If the strict
   candidate is below a reported loose inflection point, raise it to that point.
   The applied strict threshold is the ceiling of the resulting value.

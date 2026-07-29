@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
 import pandas as pd
+import tifffile
 from PIL import Image
 from scipy.interpolate import RectBivariateSpline
 
@@ -38,6 +39,37 @@ def _read_table(path: Path) -> pd.DataFrame:
     if path.suffix.lower() in {".xlsx", ".xls"}:
         return pd.read_excel(path)
     return pd.read_csv(path, float_precision="round_trip")
+
+
+def _save_figure(fig: plt.Figure, output_dir: Path) -> None:
+    fig.savefig(
+        output_dir / "Fig1.pdf",
+        bbox_inches="tight",
+        facecolor="white",
+        metadata={"Creator": "ML Threshold Selection", "CreationDate": None, "ModDate": None},
+    )
+    fig.savefig(
+        output_dir / "Fig1.svg",
+        bbox_inches="tight",
+        facecolor="white",
+        metadata={"Creator": "ML Threshold Selection", "Date": None},
+    )
+    png_path = output_dir / "Fig1.png"
+    fig.savefig(png_path, dpi=600, bbox_inches="tight", facecolor="white")
+    with Image.open(png_path) as source:
+        rgba = source.convert("RGBA")
+        white = Image.new("RGBA", rgba.size, "white")
+        flattened = Image.alpha_composite(white, rgba).convert("RGB")
+        flattened.thumbnail((4500, 5250), Image.Resampling.LANCZOS)
+        tifffile.imwrite(
+            output_dir / "Fig1.tif",
+            np.asarray(flattened),
+            photometric="rgb",
+            compression="deflate",
+            resolution=(600, 600),
+            resolutionunit="INCH",
+            metadata=None,
+        )
 
 
 def _unit_axial_vectors(data: pd.DataFrame, axis_number: int) -> np.ndarray:
@@ -135,9 +167,9 @@ def generate(args: argparse.Namespace) -> dict[str, object]:
         raise ValueError(f"Missing required column: {volume_column!r}")
     voxel_counts = data[volume_column].to_numpy(dtype=float) / args.voxel_size_mm ** 3
     stages = [
-        ("Prefiltered", 0, np.ones(len(data), dtype=bool)),
-        ("Loose", args.loose_vox, voxel_counts >= args.loose_vox),
-        ("Strict", args.strict_vox, voxel_counts >= args.strict_vox),
+        ("Before Vmin filtering", 0, np.ones(len(data), dtype=bool)),
+        ("Loose candidate", args.loose_vox, voxel_counts >= args.loose_vox),
+        ("Strict candidate", args.strict_vox, voxel_counts >= args.strict_vox),
     ]
 
     plt.rcParams.update({
@@ -227,20 +259,7 @@ def generate(args: argparse.Namespace) -> dict[str, object]:
                     })
 
     args.output.mkdir(parents=True, exist_ok=True)
-    for suffix, kwargs in {
-        ".pdf": {"metadata": {"Creator": "ML Threshold Selection", "CreationDate": None, "ModDate": None}},
-        ".svg": {"metadata": {"Creator": "ML Threshold Selection", "Date": None}},
-        ".png": {"dpi": 600},
-        ".tif": {"dpi": 600, "pil_kwargs": {"compression": "tiff_lzw"}},
-    }.items():
-        fig.savefig(args.output / f"Fig1{suffix}", bbox_inches="tight", facecolor="white", **kwargs)
-    tif_path = args.output / "Fig1.tif"
-    with Image.open(tif_path) as source:
-        rgba = source.convert("RGBA")
-        white = Image.new("RGBA", rgba.size, "white")
-        flattened = Image.alpha_composite(white, rgba).convert("RGB")
-        flattened.thumbnail((4500, 5250), Image.Resampling.LANCZOS)
-        flattened.save(tif_path, compression="tiff_lzw", dpi=(600, 600))
+    _save_figure(fig, args.output)
     plt.close(fig)
 
     grid_path = args.output / "Fig1_modified_kamb_grid.csv.gz"

@@ -120,7 +120,8 @@ def run(args):
         source = 'retrained in this run'
     else:
         # Load the released bundle. The strict threshold is the largest object whose
-        # artifact probability still exceeds --strict-probability, so it is a maximum
+        # below-threshold-class probability still exceeds --strict-probability,
+        # so it is a maximum
         # over the model's low-probability tail and shifts when the model is refitted.
         # Reproducing the reported thresholds therefore requires the released model.
         bundle = load_last(str(args.model_dir))

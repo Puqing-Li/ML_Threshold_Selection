@@ -1,4 +1,4 @@
-# ML Threshold Selection v1.3.1
+# ML Threshold Selection v1.3.2
 
 Machine-learning-assisted selection of the minimum object-volume threshold
 (`Vmin`) for XRCT particle analysis. The application trains a classifier from
@@ -11,6 +11,15 @@ and carries the current `resolution_aware_v2_per_sample_sqrt5` feature schema.
 also train a new model from the supplied five tables or from your own
 expert-labelled samples; training writes to `models/` and never overwrites the
 released bundle.
+
+## What changed in v1.3.2
+
+The TomoFab-format demonstration file now records equivalent-ellipsoid semiaxes as
+`sqrt(5 * EigenVal)`. The figure scripts reproduce the revised manuscript
+figures and export stable compressed TIFF files, and the GUI training path
+explicitly records the LightGBM component-seed profile used by the released
+model. The released model bundle, training inputs, and reported LE01 thresholds
+(50 and 154 voxels) are unchanged.
 
 ## What changed in v1.3.1
 
@@ -41,7 +50,7 @@ No analysis, model or reported number changes.
 |---|---|
 | Application entry point | `main.py` |
 | Application source | `src/ml_threshold_selection/` |
-| Scripts reproducing the published results | `scripts/` |
+| Scripts reproducing the reported thresholds, validation, and Figs 1, 3, and 4 | `scripts/` |
 | Released classifier used for the reported results | `released_model/` |
 | Model bundles you train yourself | `models/` |
 | Five training tables and authoritative input values | `training_data/` |
@@ -54,7 +63,7 @@ No analysis, model or reported number changes.
 
 ## Installation
 
-Python 3.9 or newer with Tkinter is required.
+Python 3.8 or newer with Tkinter is required.
 
 ```bash
 git clone https://github.com/Puqing-Li/ML_Threshold_Selection.git
@@ -65,6 +74,18 @@ python main.py
 
 On Windows, double-click `run_app.bat` to install dependencies and launch the
 application.
+
+For exact regeneration of the manuscript validation values shown in S3 Fig,
+use Python 3.13.13 and the recorded numerical-library versions:
+
+```bash
+python -m pip install -r requirements-reproducibility.txt
+```
+
+The broader version ranges in `requirements.txt` support normal application
+use. Small last-decimal changes in newly fitted cross-validation models can
+occur across numerical-library builds; loading `released_model/` does not refit
+the reported classifier.
 
 ## Train a new model
 
@@ -104,6 +125,11 @@ tables shipped in `training_data/` and `examples/` are already prepared.
 The displayed training AUC and accuracy are fit diagnostics. They are not an
 independent validation of scalar-threshold recovery.
 
+The GUI training path uses the explicit LightGBM component-seed profile recorded
+by the released manuscript model. The leave-one-sample-out validation script uses
+seed 42 and balanced class weights within each training fold; those validation
+settings do not replace the released fitted model.
+
 The active workflow is supervised: expert-selected physical-volume thresholds
 generate deterministic grain-level pseudo-labels, and LightGBM is fitted to
 those labels. No unlabeled observations enter model fitting. The resulting
@@ -121,8 +147,9 @@ independent identification of physical artifacts.
 
 The loose threshold is derived from the cumulative model-score curve. The
 strict threshold is one voxel above the largest object whose predicted
-artifact probability exceeds the configured tolerance, so every flagged
-object is excluded by a `Volume >= threshold` filter.
+probability of the expert-defined below-threshold class exceeds the configured
+tolerance, so every flagged object is excluded by a `Volume >= threshold`
+filter.
 
 ## P' definition
 
@@ -166,7 +193,8 @@ python scripts/cross_validation.py \
 The script uses the same per-sample voxel-size feature implementation as the
 GUI. Its object-level AUC describes ranking of the configured expert-derived
 labels; it does not independently prove recovery of each historical scalar
-`Vmin`.
+`Vmin`. The exact environment used for the reported AUC values is recorded in
+`requirements-reproducibility.txt`.
 
 ## References
 

@@ -1,0 +1,8 @@
+# Numerically relevant versions used to regenerate the reported validation values.
+# Python: 3.13.13
+-r requirements.txt
+numpy==2.4.6
+pandas==3.0.3
+scikit-learn==1.9.0
+lightgbm==4.6.0
+openpyxl==3.1.5

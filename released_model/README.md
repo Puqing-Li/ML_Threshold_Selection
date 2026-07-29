@@ -18,3 +18,9 @@ The classifier was trained on the five per-object tables in `training_data/`
 using the measured per-sample voxel sizes and expert-selected thresholds in
 `training_data/training_config.csv`. Those tables are not duplicated here; the
 portable bundle already records the exact training matrix it was fitted on.
+
+The released model was fitted with LightGBM 4.6.0. Its component seeds are
+feature fraction 2, bagging 3, data 1, extra 6, drop 4, and objective 5. The GUI
+training path makes this recorded profile explicit. Leave-one-sample-out
+validation instead uses seed 42 and balanced class weights within each training
+fold; it is an evaluation procedure, not the source of this released model.
