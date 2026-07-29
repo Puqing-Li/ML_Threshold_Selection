@@ -8,20 +8,20 @@ authoritative executable paths are:
 - `src/ml_threshold_selection/training_pipeline.py`
 - `src/ml_threshold_selection/prediction_analysis.py`
 - `src/ml_threshold_selection/fabric_bootstrap.py`
-- `scripts/cross_validation.py`
-- `scripts/rebuild_revision_results.py`
+- `scripts/analysis/cross_validation.py`
+- `scripts/analysis/rebuild_revision_results.py`
 
 Historical exploratory classes remain for compatibility but are not the paper
 pipeline unless this document explicitly names them.
 
 ## Reproducing the reported thresholds
 
-`scripts/rebuild_revision_results.py` loads the released model bundle from
-`released_model/` and reproduces the reported LE01 thresholds exactly: loose
-50 voxels (1.350000e-03 mm3, 2212 grains retained) and strict 154 voxels
+`scripts/analysis/rebuild_revision_results.py` loads the released model bundle
+from `data/released_model/` and reproduces the reported LE01 thresholds exactly:
+loose 50 voxels (1.350000e-03 mm3, 2212 grains retained) and strict 154 voxels
 (4.158000e-03 mm3, 1074 grains retained).
 
-Passing `--retrain` refits the classifier from `training_data/` instead. In the
+Passing `--retrain` refits the classifier from `data/training/` instead. In the
 current refit, the loose threshold is unchanged; it is read from the inflection
 of the retained-population mean-score curve. The strict threshold is not
 unchanged: it is defined from the largest object whose predicted probability
@@ -153,8 +153,8 @@ most 0.008 and leaves every sample above 0.90.
 
 These values were regenerated with Python 3.13.13, NumPy 2.4.6, pandas 3.0.3,
 scikit-learn 1.9.0, LightGBM 4.6.0 and openpyxl 3.1.5. The numerically relevant
-versions are recorded in `requirements-reproducibility.txt`. Refitting tree
-models under other numerical-library builds can change the last reported
+versions are recorded in `scripts/requirements-reproducibility.txt`. Refitting
+tree models under other numerical-library builds can change the last reported
 decimals; this does not alter the released fitted model or its LE01 thresholds.
 
 These values measure object ranking against the expert volume-derived
@@ -265,10 +265,10 @@ does not identify the physical truth of every object.
 
 ## Fig 1 orientation-density calculation
 
-`scripts/generate_fig1_stereonets.py` plots the three exported Avizo principal axes as
-unoriented axial data on lower-hemisphere equal-area Schmidt nets. Antipodal
-directions are combined through `abs(dot(u, v))`. Density follows the modified
-Kamb calculation used in TomoFab `DataDens.m`, locked to commit
+`scripts/analysis/generate_fig1_stereonets.py` plots the three exported Avizo
+principal axes as unoriented axial data on lower-hemisphere equal-area Schmidt
+nets. Antipodal directions are combined through `abs(dot(u, v))`. Density
+follows the modified Kamb calculation used in TomoFab `DataDens.m`, locked to commit
 `2697865623c3afa34626abdd765183825180a069`: sigma 3, a 50 by 50 base grid,
 linear display interpolation at 0.2 base-grid-cell spacing, and ten equal
 contour intervals over each panel's evaluated range. TomoFab's three-sigma

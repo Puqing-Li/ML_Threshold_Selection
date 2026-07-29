@@ -19,13 +19,13 @@ artifact identity.
   * Panel B  Per held-out sample accuracy + AUC (LOSO)
 
 Usage (from the repository root):
-    python cross_validation.py \
-        --data training_data \
-        --config training_data/training_config.csv \
+    python scripts/analysis/cross_validation.py \
+        --data data/training \
+        --config data/training/training_config.csv \
         --out outputs/S3_validation
 
 The per-sample object tables (total<SampleID>.xlsx or .csv.gz) ship in the
-``training_data`` folder; --config columns are SampleID,
+``data/training`` folder; --config columns are SampleID,
 ExpertThreshold_mm3, VoxelSize_mm and files
 are matched by SampleID (xlsx, csv, or csv.gz).
 """
@@ -35,7 +35,7 @@ import argparse
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import numpy as np
 import pandas as pd

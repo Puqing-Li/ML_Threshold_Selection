@@ -1,14 +1,14 @@
 # Quick Start
 
-This project ships the released classifier in `released_model/` together with
-the training data in `training_data/`. A first session can either load that model directly through
-**Load Last Model** or start from training.
+This project ships the released classifier in `data/released_model/` together
+with the training data in `data/training/`. A first session can either load that
+model directly through **Load Last Model** or start from training.
 
 ## Windows
 
 1. Double-click `run_app.bat`.
-2. Select the five XLSX files in `training_data/` with names beginning `total`.
-3. Enter the expert thresholds from `training_data/training_config.csv` in Step
+2. Select the five XLSX files in `data/training/` with names beginning `total`.
+3. Enter the expert thresholds from `data/training/training_config.csv` in Step
    2. Units are mm3.
 4. Enter each sample's measured `VoxelSize_mm` in Step 3. Leave no row blank.
 5. Click **5. Train Model**.

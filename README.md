@@ -5,7 +5,8 @@ Machine-learning-assisted selection of the minimum object-volume threshold
 expert-labelled samples, applies sample-specific scan resolution during feature
 construction, and computes 3D mean-fabric, P' and T after filtering.
 
-The released classifier used for the reported results ships in `released_model/`
+The released classifier used for the reported results ships in
+`data/released_model/`
 and carries the current `resolution_aware_v2_per_sample_sqrt5` feature schema.
 **Load Last Model** uses it when no locally trained model is present. You can
 also train a new model from the supplied five tables or from your own
@@ -18,8 +19,10 @@ The TomoFab-format demonstration file now records equivalent-ellipsoid semiaxes 
 `sqrt(5 * EigenVal)`. The figure scripts reproduce the revised manuscript
 figures and export stable compressed TIFF files, and the GUI training path
 explicitly records the LightGBM component-seed profile used by the released
-model. The released model bundle, training inputs, and reported LE01 thresholds
-(50 and 154 voxels) are unchanged.
+model. User-facing data are grouped under `data/`, and analysis and
+data-preparation utilities are grouped under `scripts/`. The released model
+bundle, training inputs, and reported LE01 thresholds (50 and 154 voxels) are
+unchanged.
 
 ## What changed in v1.3.1
 
@@ -50,15 +53,13 @@ No analysis, model or reported number changes.
 |---|---|
 | Application entry point | `main.py` |
 | Application source | `src/ml_threshold_selection/` |
-| Scripts reproducing the reported thresholds, validation, and Figs 1, 3, and 4 | `scripts/` |
-| Released classifier used for the reported results | `released_model/` |
+| Released classifier, training tables, examples and reference outputs | `data/` |
+| Figure, validation and data-preparation utilities | `scripts/` |
 | Model bundles you train yourself | `models/` (created at runtime) |
-| Five training tables and authoritative input values | `training_data/` |
-| Worked inputs, TomoFab format, and reference outputs | `examples/` |
 | Generated tables, reports and figures | `outputs/` (created at runtime) |
-| Avizo conversion utilities | `tools/` |
 | Scientific definitions | `docs/SCIENTIFIC_METHODS.md` |
 | Detailed GUI guide | `docs/user_guide.md` |
+| No-code quick start | `docs/QUICKSTART.md` |
 
 ## Installation
 
@@ -78,25 +79,25 @@ For exact regeneration of the manuscript validation values shown in S3 Fig,
 use Python 3.13.13 and the recorded numerical-library versions:
 
 ```bash
-python -m pip install -r requirements-reproducibility.txt
+python -m pip install -r scripts/requirements-reproducibility.txt
 ```
 
 The broader version ranges in `requirements.txt` support normal application
 use. Small last-decimal changes in newly fitted cross-validation models can
-occur across numerical-library builds; loading `released_model/` does not refit
-the reported classifier.
+occur across numerical-library builds; loading `data/released_model/` does not
+refit the reported classifier.
 
 ## Train a new model
 
-The supplied values are recorded in `training_data/training_config.csv`.
+The supplied values are recorded in `data/training/training_config.csv`.
 
 Start at step 0 only when working from a raw Avizo Label-Analysis export. The
-tables shipped in `training_data/` and `examples/` are already prepared.
+tables shipped in `data/training/` and `data/examples/` are already prepared.
 
 0. Click **0. Prepare Raw Data** to open the preparation tool, which removes
    objects whose fitted ellipsoid is degenerate and writes an app-format table.
 1. Click **1. Load Training Data** and select all five
-   `training_data/total<SampleID>.xlsx` files.
+   `data/training/total<SampleID>.xlsx` files.
 2. Click **2. Input Expert Thresholds** and enter, in mm3:
 
    ```text
@@ -173,19 +174,19 @@ Each XLSX or CSV table must contain:
 - `EigenVal1`, `EigenVal2`, `EigenVal3`;
 - `EigenVec1X` through `EigenVec3Z`.
 
-`tools/BatchFile.py` prepares app-format tables from raw Avizo Label Analysis
-exports. It removes rows with missing, non-finite, zero, or negative
-eigenvalues and preserves complete sample identifiers. `tools/To_tomofab.py`
-creates TomoFab-compatible tables.
+`scripts/data_preparation/BatchFile.py` prepares app-format tables from raw
+Avizo Label Analysis exports. It removes rows with missing, non-finite, zero,
+or negative eigenvalues and preserves complete sample identifiers.
+`scripts/data_preparation/To_tomofab.py` creates TomoFab-compatible tables.
 
 ## Pseudo-label ranking evaluation
 
 After reviewing the intended endpoint, run the object-level script with:
 
 ```bash
-python scripts/cross_validation.py \
-  --data training_data \
-  --config training_data/training_config.csv \
+python scripts/analysis/cross_validation.py \
+  --data data/training \
+  --config data/training/training_config.csv \
   --out outputs/S3_validation
 ```
 
@@ -193,7 +194,7 @@ The script uses the same per-sample voxel-size feature implementation as the
 GUI. Its object-level AUC describes ranking of the configured expert-derived
 labels; it does not independently prove recovery of each historical scalar
 `Vmin`. The exact environment used for the reported AUC values is recorded in
-`requirements-reproducibility.txt`.
+`scripts/requirements-reproducibility.txt`.
 
 ## References
 

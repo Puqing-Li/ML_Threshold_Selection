@@ -100,7 +100,7 @@ class FixedMLGUI:
         self.test_voxel_sizes = {}
         # Configuration parameters
         try:
-            from config.config import STRICT_PROBABILITY_THRESHOLD
+            from ml_threshold_selection.config import STRICT_PROBABILITY_THRESHOLD
             self.strict_probability_threshold = STRICT_PROBABILITY_THRESHOLD
         except ImportError:
             self.strict_probability_threshold = 0.01  # Default fallback
@@ -986,7 +986,12 @@ class FixedMLGUI:
             import subprocess
             import sys as _sys
             from pathlib import Path as _Path
-            script = _Path(__file__).resolve().parents[2] / 'tools' / 'BatchFile.py'
+            script = (
+                _Path(__file__).resolve().parents[2]
+                / 'scripts'
+                / 'data_preparation'
+                / 'BatchFile.py'
+            )
             if not script.is_file():
                 raise FileNotFoundError(f'Preparation tool not found at {script}')
             subprocess.Popen([_sys.executable, str(script)], cwd=str(script.parent))
@@ -998,7 +1003,7 @@ class FixedMLGUI:
             messagebox.showerror(
                 'Preparation tool',
                 f'Could not open the raw-data preparation tool.\n\n{e}\n\n'
-                'You can run it directly: tools/BatchFile.py',
+                'You can run it directly: scripts/data_preparation/BatchFile.py',
             )
 
     # Persistence
@@ -1012,9 +1017,9 @@ class FixedMLGUI:
             except FileNotFoundError:
                 # A fresh clone has no locally trained model. Fall back to the
                 # released reference bundle, which training never overwrites.
-                _released_dir = str(_root / 'released_model')
+                _released_dir = str(_root / 'data' / 'released_model')
                 model_data = persist_load_last(_released_dir)
-                self.log("Loaded the released reference model from 'released_model'")
+                self.log("Loaded the released reference model from 'data/released_model'")
             schema_version = model_data.get('feature_schema_version')
             if schema_version != FEATURE_SCHEMA_VERSION:
                 raise ValueError(

@@ -13,7 +13,7 @@ for c in python3 python; do
   if command -v "$c" >/dev/null 2>&1; then PY="$c"; break; fi
 done
 if [ -z "$PY" ]; then
-  echo "Python was not found. Please see QUICKSTART.md in the repository root."
+  echo "Python was not found. Please see docs/QUICKSTART.md."
   read -r -p "Press Return to close..."
   exit 1
 fi

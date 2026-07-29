@@ -12,9 +12,10 @@ and reported LE01 thresholds (50 and 154 voxels) are unchanged.
 
 ### Fixed
 - Corrected the TomoFab-format demonstration file
-  `examples/TT_totalLE19.xls`: its `PEllipsoid Rad1/2/3 (mm)`
+  `data/examples/TT_totalLE19.xls`: its `PEllipsoid Rad1/2/3 (mm)`
   columns now contain equivalent-ellipsoid semiaxes calculated as
-  `sqrt(5 * EigenVal)`, matching `tools/To_tomofab.py`.
+  `sqrt(5 * EigenVal)`, matching
+  `scripts/data_preparation/To_tomofab.py`.
 - Replaced the unstable Pillow LZW path used for manuscript TIFF export with
   tested Deflate-compressed TIFF output.
 
@@ -27,14 +28,16 @@ and reported LE01 thresholds (50 and 154 voxels) are unchanged.
 - The GUI training path explicitly applies the LightGBM component-seed profile
   recorded in the released model. Seed-42 validation remains a separate,
   deterministic evaluation path.
-- Added `requirements-reproducibility.txt` with the Python and numerically
-  relevant library versions used to regenerate the reported cross-validation
-  values shown in S3 Fig.
+- Added `scripts/requirements-reproducibility.txt` with the Python and
+  numerically relevant library versions used to regenerate the reported
+  cross-validation values shown in S3 Fig.
 - Documentation now distinguishes the predicted expert-defined below-threshold
   class from independent physical identification of artifacts.
-- Simplified the public repository tree: local `models/` and `outputs/`
-  directories are created at runtime and ignored, while the six LE01 reference
-  outputs are kept under `examples/reference_outputs/`.
+- Simplified the public repository tree: released resources are grouped under
+  `data/`, analysis and preparation utilities under `scripts/`, and user
+  documentation under `docs/`. Local `models/` and `outputs/` directories are
+  created at runtime and ignored, while the six LE01 reference outputs are kept
+  under `data/examples/reference_outputs/`.
 - Removed the development test suite and continuous-integration configuration
   from the public research release.
 - Removed exploratory cross-sample threshold-audit scripts that are not used to

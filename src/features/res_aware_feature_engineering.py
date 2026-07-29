@@ -31,7 +31,7 @@ class ResolutionAwareFeatureEngineer:
                 f'{len(eigenvals)} objects fail this. A raw Avizo Label-Analysis '
                 'export still contains objects whose fitted ellipsoid is '
                 'degenerate. Prepare the table first with "0. Prepare Raw Data" '
-                '(tools/BatchFile.py) and load the resulting table.'
+                '(scripts/data_preparation/BatchFile.py) and load the resulting table.'
             )
         eigenvec1 = df[['EigenVec1X', 'EigenVec1Y', 'EigenVec1Z']].values
         eigenvec2 = df[['EigenVec2X', 'EigenVec2Y', 'EigenVec2Z']].values

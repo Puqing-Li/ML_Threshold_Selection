@@ -9,8 +9,8 @@ cd /d "%~dp0"
 
 where python >nul 2>nul
 if errorlevel 1 (
-    echo Python was not found. Please see QUICKSTART.md in the
-    echo repository root for a step-by-step installation guide.
+    echo Python was not found. Please see docs\QUICKSTART.md for
+    echo a step-by-step installation guide.
     pause
     exit /b 1
 )

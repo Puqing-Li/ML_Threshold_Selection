@@ -12,8 +12,8 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-The released classifier ships in `released_model/`. Use **Load Last Model** to
-load it, or train your own model, before loading test data.
+The released classifier ships in `data/released_model/`. Use **Load Last Model**
+to load it, or train your own model, before loading test data.
 
 ## Required object-table columns
 
@@ -24,8 +24,8 @@ load it, or train your own model, before loading test data.
 | `EigenVec1X` to `EigenVec3Z` | Principal-axis direction cosines | unit vectors |
 
 The trailing space in `Volume3d (mm^3) ` is retained for compatibility with
-the Avizo export. `tools/BatchFile.py` prepares app-format tables and records
-invalid-row exclusions.
+the Avizo export. `scripts/data_preparation/BatchFile.py` prepares app-format
+tables and records invalid-row exclusions.
 
 Do not replace missing values with zero. The active workflow requires finite,
 strictly positive volumes and eigenvalues, finite direction cosines, and a
@@ -37,9 +37,9 @@ Start at step 0 only when working from a raw Avizo Label-Analysis export. The
 tables shipped with the repository are already prepared.
 
 0. Click **0. Prepare Raw Data** to open the preparation tool
-   (`tools/BatchFile.py`) in its own window. It removes objects whose fitted
-   ellipsoid is degenerate and writes an app-format table. Loading a raw export
-   at step 1 or 6 instead stops with
+   (`scripts/data_preparation/BatchFile.py`) in its own window. It removes
+   objects whose fitted ellipsoid is degenerate and writes an app-format table.
+   Loading a raw export at step 1 or 6 instead stops with
    `EigenVal1-3 must be finite and strictly positive`.
 1. Click **1. Load Training Data** and select every training table.
 2. Click **2. Input Expert Thresholds** and enter one physical-volume threshold
@@ -104,9 +104,9 @@ reported analysis.
 The supplied five-sample evaluation can be rerun with:
 
 ```bash
-python scripts/cross_validation.py \
-  --data training_data \
-  --config training_data/training_config.csv \
+python scripts/analysis/cross_validation.py \
+  --data data/training \
+  --config data/training/training_config.csv \
   --out outputs/S3_validation
 ```
 

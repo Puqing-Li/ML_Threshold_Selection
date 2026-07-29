@@ -20,7 +20,7 @@ import pandas as pd
 import tifffile
 from PIL import Image
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from ml_threshold_selection.fabric_bootstrap import (
@@ -33,7 +33,7 @@ from ml_threshold_selection.fabric_bootstrap import (
 from ml_threshold_selection.fabric_thresholds import generate_logstep_thresholds
 from ml_threshold_selection.prediction_analysis import compute_dual_thresholds
 
-STEREONET_SCRIPT = ROOT / "scripts" / "generate_fig1_stereonets.py"
+STEREONET_SCRIPT = Path(__file__).with_name("generate_fig1_stereonets.py")
 STEREONET_SPEC = importlib.util.spec_from_file_location(
     "generate_fig1_stereonets_for_fig4",
     STEREONET_SCRIPT,

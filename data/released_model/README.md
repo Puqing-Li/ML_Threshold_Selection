@@ -14,9 +14,9 @@ no locally trained model is present, so a fresh clone can reproduce the reported
 thresholds without retraining, and training your own model never overwrites this
 bundle.
 
-The classifier was trained on the five per-object tables in `training_data/`
+The classifier was trained on the five per-object tables in `data/training/`
 using the measured per-sample voxel sizes and expert-selected thresholds in
-`training_data/training_config.csv`. Those tables are not duplicated here; the
+`data/training/training_config.csv`. Those tables are not duplicated here; the
 portable bundle already records the exact training matrix it was fitted on.
 
 The released model was fitted with LightGBM 4.6.0. Its component seeds are
